@@ -1,14 +1,60 @@
 import React, { useEffect, useState } from 'react'
 import {
   Box, Typography, Card, CardContent, IconButton, Chip,
-  CircularProgress, Alert, Snackbar, Skeleton, Tooltip,
-  Divider,
+  CircularProgress, Alert, Skeleton, Tooltip, Divider,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button,
 } from '@mui/material'
-import {
-  ContentCopy, Check, VpnKey, Wifi, SignalCellularAlt,
-  FiberManualRecord,
-} from '@mui/icons-material'
-import { subscribesApi, type Subscribe } from '../../api'
+import { ContentCopy, Check, Wifi, SignalCellularAlt, Lock } from '@mui/icons-material'
+import { subscribesApi, usersApi, type Subscribe } from '../../api'
+import { useAuthStore } from '../../store/auth'
+
+function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [oldPass, setOldPass] = useState('')
+  const [newPass, setNewPass] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await usersApi.changeMyPassword(oldPass, newPass)
+      setSuccess(true)
+      setTimeout(() => { onClose(); setSuccess(false); setOldPass(''); setNewPass('') }, 1500)
+    } catch (err: any) {
+      const msg = err?.response?.data?.result?.error || err?.response?.data?.detail || 'Ошибка'
+      setError(typeof msg === 'string' ? msg : 'Неверный текущий пароль')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle sx={{ pb: 1 }}>Сменить пароль</DialogTitle>
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">Пароль успешно изменён</Alert>}
+          <TextField label="Текущий пароль" type="password" value={oldPass}
+            onChange={(e) => setOldPass(e.target.value)} required fullWidth />
+          <TextField label="Новый пароль" type="password" value={newPass}
+            onChange={(e) => setNewPass(e.target.value)} required fullWidth
+            helperText="Минимум 8 символов" />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button onClick={onClose} variant="outlined" sx={{ flex: 1 }}>Отмена</Button>
+          <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1 }}>
+            {loading ? <CircularProgress size={18} color="inherit" /> : 'Сохранить'}
+          </Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
+  )
+}
 
 function ConnectionCard({ sub }: { sub: Subscribe }) {
   const [copied, setCopied] = useState(false)
@@ -16,151 +62,73 @@ function ConnectionCard({ sub }: { sub: Subscribe }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(sub.payload)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
     } catch {
-      // fallback for older mobile browsers
       const el = document.createElement('textarea')
       el.value = sub.payload
       document.body.appendChild(el)
       el.select()
       document.execCommand('copy')
       document.body.removeChild(el)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
     }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
   }
 
-  // Извлекаем имя подключения из payload (#name в конце)
-  const name = sub.payload.split('#').pop() || `VPN ${sub.ip}`
+  const name = sub.payload.split('#').pop() || `Подключение`
 
   return (
-    <Card
-      sx={{
-        mb: 2,
-        position: 'relative',
-        overflow: 'visible',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:active': { transform: 'scale(0.98)' },
-      }}
-    >
-      {/* Glow accent */}
-      <Box
-        sx={{
-          position: 'absolute', top: -1, left: 24, right: 24, height: 2,
-          background: 'linear-gradient(90deg, transparent, #00e5ff, transparent)',
-          borderRadius: 1,
-        }}
-      />
-
-      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          {/* Icon */}
-          <Box
-            sx={{
-              width: 48, height: 48, borderRadius: 3,
-              background: 'linear-gradient(135deg, rgba(0,229,255,0.15), rgba(124,77,255,0.15))',
-              border: '1px solid rgba(0,229,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <VpnKey sx={{ color: '#00e5ff', fontSize: 22 }} />
+    <Card sx={{ mb: 1.5 }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <Box sx={{
+            width: 44, height: 44, borderRadius: 2.5,
+            background: '#E6F1FB', border: '1px solid #B5D4F4',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <Wifi sx={{ color: '#185FA5', fontSize: 20 }} />
           </Box>
 
-          {/* Info */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <FiberManualRecord sx={{ fontSize: 10, color: '#00e676' }} />
-              <Typography variant="caption" color="success.main" fontWeight={600}>
-                АКТИВНО
-              </Typography>
-            </Box>
-            <Typography
-              variant="subtitle1"
-              fontWeight={600}
-              sx={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                lineHeight: 1.3,
-              }}
+            <Typography variant="subtitle1" fontWeight={600} color="#042C53"
+              sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}
             >
               {decodeURIComponent(name)}
             </Typography>
-
-            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
-              <Chip
-                icon={<Wifi sx={{ fontSize: '14px !important' }} />}
-                label={sub.ip}
-                size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  fontFamily: '"JetBrains Mono", monospace',
-                  background: 'rgba(0,229,255,0.08)',
-                  border: '1px solid rgba(0,229,255,0.15)',
-                  color: '#00e5ff',
-                  height: 26,
-                }}
+            <Box sx={{ display: 'flex', gap: 0.75, mt: 0.75, flexWrap: 'wrap' }}>
+              <Chip icon={<Wifi sx={{ fontSize: '13px !important' }} />}
+                label={sub.ip} size="small"
+                sx={{ fontSize: '0.68rem', fontFamily: 'monospace', background: '#E6F1FB',
+                  border: '1px solid #B5D4F4', color: '#185FA5', height: 24 }}
               />
-              <Chip
-                icon={<SignalCellularAlt sx={{ fontSize: '14px !important' }} />}
-                label={`:${sub.port}`}
-                size="small"
-                sx={{
-                  fontSize: '0.7rem',
-                  fontFamily: '"JetBrains Mono", monospace',
-                  background: 'rgba(124,77,255,0.08)',
-                  border: '1px solid rgba(124,77,255,0.15)',
-                  color: '#b47cff',
-                  height: 26,
-                }}
+              <Chip icon={<SignalCellularAlt sx={{ fontSize: '13px !important' }} />}
+                label={`:${sub.port}`} size="small"
+                sx={{ fontSize: '0.68rem', fontFamily: 'monospace', background: '#E6F1FB',
+                  border: '1px solid #B5D4F4', color: '#185FA5', height: 24 }}
               />
             </Box>
           </Box>
 
-          {/* Copy button */}
-          <Tooltip title={copied ? 'Скопировано!' : 'Скопировать ссылку'} placement="left">
-            <IconButton
-              onClick={handleCopy}
-              sx={{
-                width: 48, height: 48,
-                background: copied
-                  ? 'rgba(0,230,118,0.15)'
-                  : 'rgba(0,229,255,0.1)',
-                border: `1px solid ${copied ? 'rgba(0,230,118,0.3)' : 'rgba(0,229,255,0.2)'}`,
-                borderRadius: 3,
-                transition: 'all 0.3s',
-                flexShrink: 0,
-                '&:hover': {
-                  background: copied
-                    ? 'rgba(0,230,118,0.2)'
-                    : 'rgba(0,229,255,0.2)',
-                },
-              }}
-            >
+          <Tooltip title={copied ? 'Скопировано!' : 'Скопировать'} placement="left">
+            <IconButton onClick={handleCopy} sx={{
+              width: 44, height: 44,
+              background: copied ? '#E8F5E9' : '#E6F1FB',
+              border: `1px solid ${copied ? '#A5D6A7' : '#B5D4F4'}`,
+              borderRadius: 2, flexShrink: 0, transition: 'all 0.25s',
+              '&:hover': { background: copied ? '#C8E6C9' : '#B5D4F4' },
+            }}>
               {copied
-                ? <Check sx={{ color: '#00e676', fontSize: 20 }} />
-                : <ContentCopy sx={{ color: '#00e5ff', fontSize: 20 }} />
+                ? <Check sx={{ color: '#1B7F4A', fontSize: 18 }} />
+                : <ContentCopy sx={{ color: '#185FA5', fontSize: 18 }} />
               }
             </IconButton>
           </Tooltip>
         </Box>
 
-        {/* Payload preview */}
-        <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.06)' }} />
-        <Typography
-          variant="caption"
-          sx={{
-            fontFamily: '"JetBrains Mono", monospace',
-            color: 'text.secondary',
-            display: 'block',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            fontSize: '0.65rem',
-          }}
-        >
+        <Divider sx={{ my: 1.5 }} />
+        <Typography variant="caption" sx={{
+          fontFamily: 'monospace', color: 'text.secondary', display: 'block',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.62rem',
+        }}>
           {sub.payload}
         </Typography>
       </CardContent>
@@ -172,7 +140,8 @@ export default function ClientPage() {
   const [subs, setSubs] = useState<Subscribe[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [snack, setSnack] = useState('')
+  const [passDialogOpen, setPassDialogOpen] = useState(false)
+  const user = useAuthStore((s) => s.user)
 
   useEffect(() => {
     subscribesApi.getMySubscribes()
@@ -183,63 +152,54 @@ export default function ClientPage() {
 
   return (
     <Box sx={{ pb: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Мои подключения
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mt={0.5}>
-          {subs.length > 0
-            ? `${subs.length} активных конфигурации`
-            : 'Конфигурации ещё не выданы'}
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
+        <Box>
+          <Typography variant="h5">Мои подключения</Typography>
+          <Typography variant="body2" color="text.secondary" mt={0.3}>
+            {subs.length > 0 ? `${subs.length} конфигурации` : 'Подключений пока нет'}
+          </Typography>
+        </Box>
+        <Tooltip title="Сменить пароль">
+          <IconButton onClick={() => setPassDialogOpen(true)}
+            sx={{ border: '1px solid #B5D4F4', borderRadius: 2, background: '#fff', mt: 0.5 }}>
+            <Lock sx={{ fontSize: 18, color: '#185FA5' }} />
+          </IconButton>
+        </Tooltip>
       </Box>
 
-      {loading && (
-        <>
-          {[1, 2].map((i) => (
-            <Card key={i} sx={{ mb: 2 }}>
-              <CardContent sx={{ p: 2.5 }}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Skeleton variant="rounded" width={48} height={48} sx={{ borderRadius: 3 }} />
-                  <Box sx={{ flex: 1 }}>
-                    <Skeleton width="40%" height={14} sx={{ mb: 1 }} />
-                    <Skeleton width="70%" height={20} sx={{ mb: 1 }} />
-                    <Skeleton width="50%" height={26} sx={{ borderRadius: 2 }} />
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
-        </>
-      )}
+      {loading && [1, 2].map((i) => (
+        <Card key={i} sx={{ mb: 1.5 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Skeleton variant="rounded" width={44} height={44} sx={{ borderRadius: 2.5 }} />
+              <Box sx={{ flex: 1 }}>
+                <Skeleton width="60%" height={18} sx={{ mb: 0.75 }} />
+                <Skeleton width="40%" height={24} sx={{ borderRadius: 2 }} />
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
 
-      {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {!loading && subs.length === 0 && !error && (
         <Card>
-          <CardContent sx={{ textAlign: 'center', py: 6 }}>
-            <VpnKey sx={{ fontSize: 56, color: 'text.secondary', mb: 2, opacity: 0.4 }} />
-            <Typography variant="h6" color="text.secondary" fontWeight={500}>
+          <CardContent sx={{ textAlign: 'center', py: 5 }}>
+            <Wifi sx={{ fontSize: 48, color: '#B5D4F4', mb: 1.5 }} />
+            <Typography variant="subtitle1" color="#185FA5" fontWeight={500}>
               Нет активных подключений
             </Typography>
-            <Typography variant="body2" color="text.secondary" mt={1}>
-              Обратитесь к администратору для получения доступа
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              Обратитесь к администратору
             </Typography>
           </CardContent>
         </Card>
       )}
 
-      {subs.map((sub) => (
-        <ConnectionCard key={sub.id} sub={sub} />
-      ))}
+      {subs.map((sub) => <ConnectionCard key={sub.id} sub={sub} />)}
 
-      <Snackbar
-        open={!!snack}
-        autoHideDuration={2000}
-        onClose={() => setSnack('')}
-        message={snack}
-      />
+      <ChangePasswordDialog open={passDialogOpen} onClose={() => setPassDialogOpen(false)} />
     </Box>
   )
 }

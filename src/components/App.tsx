@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react'
 import {
   Box, BottomNavigation, BottomNavigationAction,
-  CircularProgress, Typography, Avatar, IconButton,
+  CircularProgress, Typography, IconButton,
   Menu, MenuItem, Divider,
 } from '@mui/material'
 import {
-  VpnKey, AdminPanelSettings, Logout, AccountCircle,
+  Wifi, AdminPanelSettings, Logout, AccountCircle,
+  Notifications,
 } from '@mui/icons-material'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import ClientPage from './client/ClientPage'
 import AdminPage from './admin/AdminPage'
+import NotificationsPage from './admin/NotificationsPage'
 import LoginPage from '../pages/LoginPage'
 
 function ProtectedLayout() {
@@ -20,7 +22,8 @@ function ProtectedLayout() {
   const location = useLocation()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
-  const navValue = location.pathname.startsWith('/admin') ? 1 : 0
+  const navValue = location.pathname.startsWith('/notifications')
+    ? 2 : location.pathname.startsWith('/admin') ? 1 : 0
 
   if (!user) return <Navigate to="/login" replace />
 
@@ -30,82 +33,52 @@ function ProtectedLayout() {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'radial-gradient(ellipse at 50% -20%, rgba(0,229,255,0.05) 0%, transparent 60%)',
-      }}
-    >
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F0F4FF' }}>
       {/* Top bar */}
-      <Box
-        sx={{
-          position: 'sticky', top: 0, zIndex: 100,
-          px: 2, pt: 2, pb: 1.5,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(8,8,16,0.8)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 32, height: 32,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #00e5ff33, #7c4dff33)',
-              border: '1px solid rgba(0,229,255,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <VpnKey sx={{ fontSize: 16, color: '#00e5ff' }} />
+      <Box sx={{
+        position: 'sticky', top: 0, zIndex: 100,
+        px: 2, pt: 1.5, pb: 1.25,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'rgba(240,244,255,0.9)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid #E6F1FB',
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          <Box sx={{
+            width: 30, height: 30, borderRadius: 1.5,
+            background: '#185FA5',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Box sx={{ width: 12, height: 8, border: '2px solid white', borderRadius: '2px' }} />
           </Box>
-          <Typography variant="subtitle1" fontWeight={700} letterSpacing={0.5}>
-            VPN Access
+          <Typography variant="subtitle1" fontWeight={700} color="#042C53" letterSpacing={0.2}>
+            Savebit
           </Typography>
         </Box>
 
-        <IconButton
-          size="small"
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-          sx={{
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 2,
-            px: 1,
-            gap: 1,
-          }}
+        <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}
+          sx={{ border: '1px solid #E6F1FB', borderRadius: 2, px: 1.25, gap: 0.75, background: '#fff' }}
         >
-          <AccountCircle sx={{ fontSize: 20, color: 'text.secondary' }} />
-          <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <AccountCircle sx={{ fontSize: 18, color: '#378ADD' }} />
+          <Typography variant="caption" color="#378ADD" sx={{
+            maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
             {user.email.split('@')[0]}
           </Typography>
         </IconButton>
 
-        <Menu
-          anchorEl={anchorEl}
-          open={!!anchorEl}
-          onClose={() => setAnchorEl(null)}
-          PaperProps={{
-            sx: {
-              background: '#0f0f1a',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 3,
-              mt: 1,
-              minWidth: 200,
-            },
-          }}
+        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={() => setAnchorEl(null)}
+          PaperProps={{ sx: { background: '#fff', border: '1px solid #E6F1FB', borderRadius: 3, mt: 1, minWidth: 210 } }}
         >
           <Box sx={{ px: 2, py: 1.5 }}>
             <Typography variant="caption" color="text.secondary">Вы вошли как</Typography>
-            <Typography variant="body2" fontWeight={600} sx={{ wordBreak: 'break-all' }}>
+            <Typography variant="body2" fontWeight={600} color="#042C53" sx={{ wordBreak: 'break-all' }}>
               {user.email}
             </Typography>
           </Box>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)' }} />
-          <MenuItem
-            onClick={handleLogout}
-            sx={{ color: 'error.main', gap: 1.5, py: 1.5, '&:hover': { background: 'rgba(255,23,68,0.08)' } }}
+          <Divider />
+          <MenuItem onClick={handleLogout}
+            sx={{ color: '#C0392B', gap: 1.5, py: 1.5, '&:hover': { background: '#FEF0F0' } }}
           >
             <Logout fontSize="small" />
             <Typography variant="body2">Выйти</Typography>
@@ -114,34 +87,28 @@ function ProtectedLayout() {
       </Box>
 
       {/* Content */}
-      <Box sx={{ flex: 1, px: 2, pt: 2, pb: user.is_superuser ? 10 : 2, maxWidth: 600, mx: 'auto', width: '100%' }}>
+      <Box sx={{
+        flex: 1, px: 2, pt: 2,
+        pb: user.is_superuser ? 10 : 2,
+        maxWidth: 560, mx: 'auto', width: '100%',
+      }}>
         <Routes>
           <Route path="/" element={<ClientPage />} />
           {user.is_superuser && <Route path="/admin" element={<AdminPage />} />}
+          {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
 
-      {/* Bottom nav (only for superuser) */}
+      {/* Bottom nav — только для суперюзера */}
       {user.is_superuser && (
-        <Box
-          sx={{
-            position: 'fixed', bottom: 0, left: 0, right: 0,
-            zIndex: 100,
-          }}
-        >
-          <BottomNavigation
-            value={navValue}
-            onChange={(_, v) => navigate(v === 0 ? '/' : '/admin')}
+        <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+          <BottomNavigation value={navValue}
+            onChange={(_, v) => navigate(v === 0 ? '/' : v === 1 ? '/admin' : '/notifications')}
           >
-            <BottomNavigationAction
-              label="Мои ключи"
-              icon={<VpnKey />}
-            />
-            <BottomNavigationAction
-              label="Пользователи"
-              icon={<AdminPanelSettings />}
-            />
+            <BottomNavigationAction label="Мои ключи" icon={<Wifi />} />
+            <BottomNavigationAction label="Пользователи" icon={<AdminPanelSettings />} />
+            <BottomNavigationAction label="Рассылка" icon={<Notifications />} />
           </BottomNavigation>
         </Box>
       )}
@@ -157,8 +124,8 @@ export default function App() {
 
   if (!initialized) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress sx={{ color: '#00e5ff' }} />
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F0F4FF' }}>
+        <CircularProgress sx={{ color: '#185FA5' }} />
       </Box>
     )
   }

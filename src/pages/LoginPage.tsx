@@ -3,10 +3,26 @@ import {
   Box, Card, CardContent, TextField, Button, Typography,
   Tab, Tabs, Alert, CircularProgress, InputAdornment, IconButton,
 } from '@mui/material'
-import { Visibility, VisibilityOff, WifiTethering } from '@mui/icons-material'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { authApi } from '../api'
+
+const parseError = (err: any): string => {
+  const data = err?.response?.data
+  if (!data) return 'Ошибка соединения'
+  if (data?.result?.error) return data.result.error
+  const detail = data?.detail
+  if (!detail) return 'Неизвестная ошибка'
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail.map((e: any) => {
+      const field = e.loc?.slice(-1)[0] || ''
+      return field ? `${field}: ${e.msg}` : e.msg
+    }).join(', ')
+  }
+  return 'Ошибка'
+}
 
 export default function LoginPage() {
   const [tab, setTab] = useState(0)
@@ -28,8 +44,7 @@ export default function LoginPage() {
       await login(email, password)
       navigate('/')
     } catch (err: any) {
-      const msg = err?.response?.data?.result?.error || err?.response?.data?.detail || 'Ошибка входа'
-      setError(msg)
+      setError(parseError(err))
     } finally {
       setLoading(false)
     }
@@ -41,89 +56,61 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await authApi.register(email, password)
-      setSuccess('Заявка отправлена. Ожидайте активации аккаунта администратором.')
+      setSuccess('Заявка отправлена. Ожидайте активации аккаунта.')
       setTab(0)
     } catch (err: any) {
-      const msg = err?.response?.data?.result?.error || err?.response?.data?.detail || 'Ошибка регистрации'
-      setError(typeof msg === 'string' ? msg : JSON.stringify(msg))
+      setError(parseError(err))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 2,
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 70%)',
-      }}
-    >
+    <Box sx={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', px: 2, background: '#F0F4FF',
+    }}>
       <Box sx={{ width: '100%', maxWidth: 400 }}>
-        {/* Logo */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Box
-            sx={{
-              width: 72, height: 72,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #00e5ff22, #7c4dff22)',
-              border: '1px solid rgba(0,229,255,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              mx: 'auto', mb: 2,
-              boxShadow: '0 0 40px rgba(0,229,255,0.15)',
-            }}
-          >
-            <WifiTethering sx={{ fontSize: 36, color: '#00e5ff' }} />
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Box sx={{
+            width: 56, height: 56, borderRadius: 3,
+            background: '#185FA5',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            mx: 'auto', mb: 1.5,
+          }}>
+            <Box sx={{ width: 22, height: 14, border: '2.5px solid white', borderRadius: '4px' }} />
           </Box>
-          <Typography variant="h5" fontWeight={700} letterSpacing={1}>
-            VPN Access
-          </Typography>
+          <Typography variant="h5" fontWeight={700} color="#042C53">Savebit</Typography>
           <Typography variant="body2" color="text.secondary" mt={0.5}>
-            Защищённый доступ к сети
+            Управление подключениями
           </Typography>
         </Box>
 
         <Card>
           <CardContent sx={{ p: 0 }}>
-            <Tabs
-              value={tab}
-              onChange={(_, v) => { setTab(v); setError(''); setSuccess('') }}
+            <Tabs value={tab} onChange={(_, v) => { setTab(v); setError(''); setSuccess('') }}
               variant="fullWidth"
-              sx={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+              sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
             >
               <Tab label="Войти" />
               <Tab label="Регистрация" />
             </Tabs>
 
-            <Box
-              component="form"
-              onSubmit={tab === 0 ? handleLogin : handleRegister}
-              sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}
+            <Box component="form" onSubmit={tab === 0 ? handleLogin : handleRegister}
+              sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}
             >
-              {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
-              {success && <Alert severity="success" sx={{ borderRadius: 3 }}>{success}</Alert>}
+              {error && <Alert severity="error">{error}</Alert>}
+              {success && <Alert severity="success">{success}</Alert>}
 
-              <TextField
-                label="Email"
-                type="email"
-                value={email}
+              <TextField label="Email" type="email" value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                fullWidth
-                autoComplete="email"
-                autoCapitalize="none"
+                required fullWidth autoComplete="email" autoCapitalize="none"
               />
 
               <TextField
-                label="Пароль"
-                type={showPass ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                fullWidth
+                label="Пароль" type={showPass ? 'text' : 'password'}
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                required fullWidth
                 autoComplete={tab === 0 ? 'current-password' : 'new-password'}
                 InputProps={{
                   endAdornment: (
@@ -138,20 +125,15 @@ export default function LoginPage() {
 
               {tab === 1 && (
                 <Typography variant="caption" color="text.secondary" textAlign="center">
-                  После регистрации аккаунт будет активирован администратором
+                  Минимум 8 символов. После регистрации аккаунт активирует администратор.
                 </Typography>
               )}
 
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={loading}
-                fullWidth
-                sx={{ mt: 1, py: 1.5 }}
+              <Button type="submit" variant="contained" size="large"
+                disabled={loading} fullWidth sx={{ py: 1.4 }}
               >
                 {loading
-                  ? <CircularProgress size={22} color="inherit" />
+                  ? <CircularProgress size={20} color="inherit" />
                   : tab === 0 ? 'Войти' : 'Подать заявку'
                 }
               </Button>
