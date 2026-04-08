@@ -32,7 +32,7 @@ services:
     networks:
       - media-shared-network
 
-# docker compose -f compose/docker-compose.yml --env-file .env run --rm certbot certonly --webroot   --webroot-path=/var/www/certbot   -d media-panorama.ru -d www.media-panorama.ru --email khasanknyazev81@gmail.com   --agree-tos --no-eff-email
+# docker compose -f compose/docker-compose.yml --env-file .env run --rm certbot certonly --webroot   --webroot-path=/var/www/certbot   -d savebit.ru -d www.savebit.ru --email khasanknyazev81@gmail.com   --agree-tos --no-eff-email
 
 volumes:
   pgdata:
