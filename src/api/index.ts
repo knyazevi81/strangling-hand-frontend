@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // ── Поменяй эту строку на свой IP/домен ───────────────────────────────────────
-export const API_BASE_URL = 'http://localhost:8000'
+export const API_BASE_URL = 'http://5.42.114.106:8000'
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
