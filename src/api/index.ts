@@ -91,3 +91,8 @@ export const subscribesApi = {
     api.patch<Subscribe>(`/subscribes/${id}`, data),
   delete: (id: string) => api.delete(`/subscribes/${id}`),
 }
+
+
+export const freeVpnApi = {
+  getConfigs: () => api.get<{ url: string }[]>('/free-vpn/configs'),
+}

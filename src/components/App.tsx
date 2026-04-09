@@ -6,11 +6,12 @@ import {
 } from '@mui/material'
 import {
   Wifi, AdminPanelSettings, Logout, AccountCircle,
-  Notifications,
+  Notifications, WifiFind,
 } from '@mui/icons-material'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import ClientPage from './client/ClientPage'
+import FreeVpnPage from './client/FreeVpnPage'
 import AdminPage from './admin/AdminPage'
 import NotificationsPage from './admin/NotificationsPage'
 import LoginPage from '../pages/LoginPage'
@@ -22,14 +23,29 @@ function ProtectedLayout() {
   const location = useLocation()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
+  // nav index: 0=мои ключи, 1=банк, 2=пользователи(admin), 3=рассылка(admin)
   const navValue = location.pathname.startsWith('/notifications')
-    ? 2 : location.pathname.startsWith('/admin') ? 1 : 0
+    ? 3
+    : location.pathname.startsWith('/admin')
+    ? 2
+    : location.pathname.startsWith('/free-vpn')
+    ? 1
+    : 0
 
   if (!user) return <Navigate to="/login" replace />
 
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  // Нижняя навигация — для всех активных пользователей
+  const handleNav = (_: any, v: number) => {
+    if (user.is_superuser) {
+      navigate(v === 0 ? '/' : v === 1 ? '/free-vpn' : v === 2 ? '/admin' : '/notifications')
+    } else {
+      navigate(v === 0 ? '/' : '/free-vpn')
+    }
   }
 
   return (
@@ -89,29 +105,27 @@ function ProtectedLayout() {
       {/* Content */}
       <Box sx={{
         flex: 1, px: 2, pt: 2,
-        pb: user.is_superuser ? 10 : 2,
+        pb: 10,
         maxWidth: 560, mx: 'auto', width: '100%',
       }}>
         <Routes>
           <Route path="/" element={<ClientPage />} />
+          <Route path="/free-vpn" element={<FreeVpnPage />} />
           {user.is_superuser && <Route path="/admin" element={<AdminPage />} />}
           {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
 
-      {/* Bottom nav — только для суперюзера */}
-      {user.is_superuser && (
-        <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-          <BottomNavigation value={navValue}
-            onChange={(_, v) => navigate(v === 0 ? '/' : v === 1 ? '/admin' : '/notifications')}
-          >
-            <BottomNavigationAction label="Мои ключи" icon={<Wifi />} />
-            <BottomNavigationAction label="Пользователи" icon={<AdminPanelSettings />} />
-            <BottomNavigationAction label="Рассылка" icon={<Notifications />} />
-          </BottomNavigation>
-        </Box>
-      )}
+      {/* Bottom nav — для всех */}
+      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+        <BottomNavigation value={navValue} onChange={handleNav}>
+          <BottomNavigationAction label="Мои ключи" icon={<Wifi />} />
+          <BottomNavigationAction label="Банк VPN" icon={<WifiFind />} />
+          {user.is_superuser && <BottomNavigationAction label="Пользователи" icon={<AdminPanelSettings />} />}
+          {user.is_superuser && <BottomNavigationAction label="Рассылка" icon={<Notifications />} />}
+        </BottomNavigation>
+      </Box>
     </Box>
   )
 }
