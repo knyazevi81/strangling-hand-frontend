@@ -12,6 +12,8 @@ services:
       - media-shared-network
   nginx:
     image: nginx:latest
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
     container_name: nginx
     restart: always
     ports:
