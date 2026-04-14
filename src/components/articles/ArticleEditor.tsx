@@ -13,7 +13,7 @@ import { articlesApi } from '../../api/articles'
 import { useAuthStore } from '../../store/auth'
 import { getTagColor } from './utils'
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || ''
+const API_BASE = 'https://api.savebit.ru'
 
 export default function ArticleEditor() {
   const { id } = useParams<{ id: string }>()

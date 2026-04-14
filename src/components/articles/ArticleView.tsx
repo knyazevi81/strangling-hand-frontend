@@ -15,7 +15,7 @@ import { useAuthStore } from '../../store/auth'
 import { getTagColor, formatDate } from './utils'
 import CommentsSection from './CommentsSection'
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || ''
+const API_BASE = 'https://api.savebit.ru'
 
 export default function ArticleView() {
   const { id } = useParams<{ id: string }>()
@@ -171,9 +171,13 @@ export default function ArticleView() {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            img: ({ src, alt }) => {
-              const finalSrc = src?.startsWith('/api/') ? `${API_BASE}${src}` : src
-              return <img src={finalSrc} alt={alt} style={{ maxWidth: '100%', borderRadius: 8 }} />
+            img: ({ src, alt, ...props }) => {
+              const finalSrc = src?.startsWith('/api/') 
+                ? `${API_BASE}${src}`
+                : src?.startsWith('http') 
+                ? src 
+                : `${API_BASE}${src}`
+              return <img src={finalSrc} alt={alt || ''} style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
             },
           }}
         >
