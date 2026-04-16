@@ -22,6 +22,7 @@ services:
       - ../nginx/conf.d:/etc/nginx/conf.d
       - ./frontend_cert/conf:/etc/letsencrypt/frontend
       - ./backend_cert/conf:/etc/letsencrypt/backend
+      - ./grafana_cert/conf:/etc/letsencrypt/grafana
     networks:
       - media-shared-network
 
