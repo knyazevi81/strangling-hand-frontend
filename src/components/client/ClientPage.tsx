@@ -8,6 +8,7 @@ import {
 import { ContentCopy, Check, Wifi, SignalCellularAlt, Lock } from '@mui/icons-material'
 import { subscribesApi, usersApi, type Subscribe } from '../../api'
 import { useAuthStore } from '../../store/auth'
+import PingPanel from './PingPanel'
 
 function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [oldPass, setOldPass] = useState('')
@@ -152,6 +153,7 @@ export default function ClientPage() {
 
   return (
     <Box sx={{ pb: 2 }}>
+      {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
         <Box>
           <Typography variant="h5">Мои подключения</Typography>
@@ -198,6 +200,11 @@ export default function ClientPage() {
       )}
 
       {subs.map((sub) => <ConnectionCard key={sub.id} sub={sub} />)}
+
+      {/* Ping panel — показываем только если есть подключения */}
+      {!loading && subs.length > 0 && (
+        <PingPanel subscribes={subs} />
+      )}
 
       <ChangePasswordDialog open={passDialogOpen} onClose={() => setPassDialogOpen(false)} />
     </Box>

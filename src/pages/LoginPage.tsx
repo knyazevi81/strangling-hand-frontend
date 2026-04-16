@@ -4,7 +4,7 @@ import {
   Tab, Tabs, Alert, CircularProgress, InputAdornment, IconButton,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { authApi } from '../api'
 
@@ -35,7 +35,6 @@ export default function LoginPage() {
 
   const login = useAuthStore((s) => s.login)
   const navigate = useNavigate()
-  const location = useLocation()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,8 +42,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
-      const from = (location.state as any)?.from?.pathname || '/'
-      navigate(from, { replace: true })
+      navigate('/')
     } catch (err: any) {
       setError(parseError(err))
     } finally {

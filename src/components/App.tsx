@@ -21,7 +21,6 @@ import LoginPage from '../pages/LoginPage'
 
 function ProtectedLayout() {
   const user = useAuthStore((s) => s.user)
-  const initialized = useAuthStore((s) => s.initialized)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
   const location = useLocation()
@@ -37,12 +36,7 @@ function ProtectedLayout() {
   }
   const navValue = getNavValue()
 
-  if (!initialized) return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F0F4FF' }}>
-      <CircularProgress sx={{ color: '#185FA5' }} />
-    </Box>
-  )
-  if (!user) return <Navigate to="/login" state={{ from: location }} replace />
+  if (!user) return <Navigate to="/login" replace />
 
   const handleLogout = () => { logout(); navigate('/login') }
 
