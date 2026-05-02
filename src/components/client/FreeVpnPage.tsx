@@ -8,9 +8,11 @@ import {
   ContentCopy, Check, Refresh, InfoOutlined,
   SignalCellularAlt, NetworkCheck,
 } from '@mui/icons-material'
-import { freeVpnApi } from '../../api'
+import { freeVpnApi, API_BASE_URL } from '../../api'
 
 const REFRESH_INTERVAL = 5 * 60 * 1000
+const WS_BASE = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
+const PING_TIMEOUT_MS = 15000
 
 function parseVless(url: string) {
   try {
@@ -71,7 +73,17 @@ function ConfigCard({ item, index }: { item: { url: string }; index: number }) {
   const [copied, setCopied] = useState(false)
   const [pingResult, setPingResult] = useState<SinglePingResult | null>(null)
   const [pinging, setPinging] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const info = parseVless(item.url)
+
+  // Закрыть сокет и снять таймаут при размонтировании
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      wsRef.current?.close()
+    }
+  }, [])
 
   const handleCopy = async () => {
     try { await navigator.clipboard.writeText(item.url) }
@@ -84,24 +96,73 @@ function ConfigCard({ item, index }: { item: { url: string }; index: number }) {
     setCopied(true); setTimeout(() => setCopied(false), 2500)
   }
 
-  const handlePing = async () => {
+  const finishPing = (result: SinglePingResult | null) => {
+    if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null }
+    if (result) setPingResult(result)
+    setPinging(false)
+    wsRef.current?.close()
+    wsRef.current = null
+  }
+
+  const handlePing = () => {
     if (pinging) return
-    setPinging(true); setPingResult(null)
+    setPinging(true)
+    setPingResult(null)
+
+    const token = localStorage.getItem('access_token') || ''
+    let ws: WebSocket
     try {
-      const token = localStorage.getItem('access_token') || ''
-      const res = await fetch(
-        `https://api.savebit.ru/api/v1/free-vpn/ping-one?uri=${encodeURIComponent(item.url)}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (res.ok) {
-        const data = await res.json()
-        setPingResult({ status: data.status, avg_ms: data.avg_ms })
-      } else {
-        setPingResult({ status: 'error', avg_ms: null })
-      }
+      ws = new WebSocket(`${WS_BASE}/api/v1/ping/ws`)
     } catch {
-      setPingResult({ status: 'error', avg_ms: null })
-    } finally { setPinging(false) }
+      finishPing({ status: 'error', avg_ms: null })
+      return
+    }
+    wsRef.current = ws
+
+    // Защита от зависания — если сервер молчит, считаем таймаутом
+    timeoutRef.current = setTimeout(() => {
+      finishPing({ status: 'timeout', avg_ms: null })
+    }, PING_TIMEOUT_MS)
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ token, single_uri: item.url }))
+    }
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data)
+
+        // Серверная ошибка без результата (например, неверный токен)
+        if (data.error && !data.uri) {
+          finishPing({ status: 'error', avg_ms: null })
+          return
+        }
+
+        // Сообщение с результатом пинга
+        if (data.uri) {
+          finishPing({ status: data.status, avg_ms: data.avg_ms ?? null })
+          return
+        }
+
+        // Сигнал завершения без результата — оставляем то, что уже есть
+        if (data.done) {
+          if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null }
+          setPinging(false)
+          ws.close()
+          wsRef.current = null
+        }
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+
+    ws.onerror = () => finishPing({ status: 'error', avg_ms: null })
+    ws.onclose = () => {
+      // Если сокет закрылся, а результат не пришёл — фиксируем ошибку
+      if (timeoutRef.current) {
+        finishPing({ status: 'error', avg_ms: null })
+      }
+    }
   }
 
   const pingBg = !pingResult ? '#E6F1FB' : pingResult.status === 'ok' ? '#E8F5E9' : '#FFEBEE'
