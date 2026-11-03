@@ -23,6 +23,9 @@ services:
       - ./frontend_cert/conf:/etc/letsencrypt/frontend
       - ./backend_cert/conf:/etc/letsencrypt/backend
       - ./grafana_cert/conf:/etc/letsencrypt/grafana
+      - /var/www/certbot:/var/www/certbot
+    depends_on:
+      - frontend
     networks:
       - media-shared-network
 
