@@ -18,6 +18,7 @@ import ArticlesPage from './articles/ArticlesPage'
 import ArticleView from './articles/ArticleView'
 import ArticleEditor from './articles/ArticleEditor'
 import LoginPage from '../pages/LoginPage'
+import ForgotPasswordPage from '../pages/ForgotPasswordPage'
 
 function ProtectedLayout() {
   const user = useAuthStore((s) => s.user)
@@ -148,6 +149,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/*" element={<ProtectedLayout />} />
     </Routes>
   )

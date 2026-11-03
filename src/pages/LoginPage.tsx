@@ -4,11 +4,11 @@ import {
   Tab, Tabs, Alert, CircularProgress, InputAdornment, IconButton,
 } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { authApi } from '../api'
 
-const parseError = (err: any): string => {
+export const parseError = (err: any): string => {
   const data = err?.response?.data
   if (!data) return 'Ошибка соединения'
   if (data?.result?.error) return data.result.error
@@ -25,12 +25,14 @@ const parseError = (err: any): string => {
 }
 
 export default function LoginPage() {
+  // после восстановления пароля сюда приходят email и сообщение об успехе
+  const navState = useLocation().state as { email?: string; message?: string } | null
   const [tab, setTab] = useState(0)
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(navState?.email ?? '')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [success, setSuccess] = useState(navState?.message ?? '')
   const [loading, setLoading] = useState(false)
 
   const login = useAuthStore((s) => s.login)
@@ -122,6 +124,16 @@ export default function LoginPage() {
                   ),
                 }}
               />
+
+              {tab === 0 && (
+                <Typography
+                  component={RouterLink} to="/forgot-password" state={{ email }}
+                  variant="body2" color="#378ADD"
+                  sx={{ alignSelf: 'flex-end', mt: -1, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                >
+                  Забыли пароль?
+                </Typography>
+              )}
 
               {tab === 1 && (
                 <Typography variant="caption" color="text.secondary" textAlign="center">
