@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material'
 import { usersApi, subscribesApi, type User, type Subscribe } from '../../api'
 import SubscribeDialog from './SubscribeDialog'
+import UserAccessDialog from './access/UserAccessDialog'
 
 interface Props {
   user: User
@@ -118,6 +119,7 @@ export default function UserCard({ user, pending, onActivated }: Props) {
   const [activating, setActivating] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editSub, setEditSub] = useState<Subscribe | null>(null)
+  const [accessOpen, setAccessOpen] = useState(false)
 
   const loadSubs = async () => {
     setLoadingSubs(true)
@@ -222,6 +224,16 @@ export default function UserCard({ user, pending, onActivated }: Props) {
 
               <Button
                 size="small"
+                variant="contained"
+                fullWidth
+                onClick={() => setAccessOpen(true)}
+                sx={{ mb: 1, borderRadius: 3 }}
+              >
+                Доступ к выходам
+              </Button>
+
+              <Button
+                size="small"
                 startIcon={<Add />}
                 variant="outlined"
                 fullWidth
@@ -263,6 +275,8 @@ export default function UserCard({ user, pending, onActivated }: Props) {
         userId={user.id}
         editSub={editSub}
       />
+
+      <UserAccessDialog userId={user.id} email={user.email} open={accessOpen} onClose={() => setAccessOpen(false)} />
     </>
   )
 }

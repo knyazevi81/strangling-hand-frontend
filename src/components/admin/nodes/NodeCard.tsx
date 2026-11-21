@@ -4,7 +4,7 @@ import {
   Menu, MenuItem, ListItemIcon, Divider, LinearProgress,
 } from '@mui/material'
 import {
-  MoreVert, Edit, Key, Code, Delete, ExpandMore, ExpandLess, Login, Public,
+  MoreVert, Edit, Key, Code, Delete, ExpandMore, ExpandLess, Login, Public, Group,
 } from '@mui/icons-material'
 import type { VpnNode } from '../../../api'
 import { bytes, countryLabel, timeAgo } from '../../vpn/utils'
@@ -44,7 +44,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export default function NodeCard({
-  node, onToggle, onEdit, onRotate, onConfig, onDelete,
+  node, onToggle, onEdit, onRotate, onConfig, onDelete, onAccess,
 }: {
   node: VpnNode
   onToggle: (enabled: boolean) => void
@@ -52,6 +52,7 @@ export default function NodeCard({
   onRotate: () => void
   onConfig: () => void
   onDelete: () => void
+  onAccess?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
@@ -81,6 +82,10 @@ export default function NodeCard({
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
               <Typography variant="subtitle1" fontWeight={700} color="#042C53" lineHeight={1.3}>{node.name}</Typography>
+              {node.role === 'exit' && node.restricted && (
+                <Chip label="для выбранных" size="small" onClick={onAccess}
+                  sx={{ height: 20, fontSize: '0.62rem', background: '#FFF4E5', color: '#6B3A00' }} />
+              )}
               <Chip label={st.label} size="small" sx={{
                 height: 20, fontSize: '0.62rem', fontWeight: 600,
                 color: st.color, background: st.bg, border: `1px solid ${st.border}`,
@@ -106,6 +111,9 @@ export default function NodeCard({
           <Menu anchorEl={menu} open={!!menu} onClose={() => setMenu(null)}
             PaperProps={{ sx: { borderRadius: 3, border: '1px solid #E6F1FB', minWidth: 200 } }}>
             <MenuItem onClick={act(onEdit)}><ListItemIcon><Edit fontSize="small" /></ListItemIcon>Изменить</MenuItem>
+            {node.role === 'exit' && onAccess && (
+              <MenuItem onClick={act(onAccess)}><ListItemIcon><Group fontSize="small" /></ListItemIcon>Кто может пользоваться</MenuItem>
+            )}
             <MenuItem onClick={act(onRotate)}><ListItemIcon><Key fontSize="small" /></ListItemIcon>Новый ключ</MenuItem>
             <MenuItem onClick={act(onConfig)}><ListItemIcon><Code fontSize="small" /></ListItemIcon>Конфиг Xray</MenuItem>
             <Divider />

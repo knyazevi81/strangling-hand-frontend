@@ -174,6 +174,7 @@ export interface VpnNode {
   address: string
   country: string | null
   enabled: boolean
+  restricted?: boolean
   key_prefix: string
   settings: NodeSettings
   online: boolean
@@ -243,6 +244,24 @@ export interface UserTrafficDetail {
 export const trafficApi = {
   overview: (days: number) => api.get<TrafficOverview>('/admin/traffic/', { params: { days } }),
   user: (id: string, days: number) => api.get<UserTrafficDetail>(`/admin/traffic/users/${id}`, { params: { days } }),
+}
+
+export type ExitMode = 'all' | 'some'
+export interface ExitAccessItem {
+  node_id: string; name: string; country: string | null; enabled: boolean; online: boolean
+  restricted: boolean; granted: boolean; allowed: boolean
+}
+export interface UserAccess { user_id: string; email: string; mode: ExitMode; exits: ExitAccessItem[] }
+export interface NodeAccessUser { user_id: string; email: string; mode: ExitMode; granted: boolean; allowed: boolean; locked: boolean }
+export interface NodeAccess { node_id: string; name: string; restricted: boolean; users: NodeAccessUser[] }
+
+export const accessApi = {
+  user: (id: string) => api.get<UserAccess>(`/admin/access/users/${id}`),
+  setUser: (id: string, mode: ExitMode, exitIds: string[]) =>
+    api.put<UserAccess>(`/admin/access/users/${id}`, { mode, exit_ids: exitIds }),
+  node: (id: string) => api.get<NodeAccess>(`/admin/access/nodes/${id}`),
+  setNode: (id: string, restricted: boolean, userIds: string[]) =>
+    api.put<NodeAccess>(`/admin/access/nodes/${id}`, { restricted, user_ids: userIds }),
 }
 
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
