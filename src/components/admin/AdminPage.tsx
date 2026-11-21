@@ -3,7 +3,9 @@ import {
   Box, Typography, Tabs, Tab, Alert,
   Skeleton, Card, CardContent, Badge,
 } from '@mui/material'
-import { People, HourglassEmpty, BarChart, Block } from '@mui/icons-material'
+import { People, HourglassEmpty, BarChart, Block, Settings } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import { IconButton, Tooltip } from '@mui/material'
 import { usersApi, blocksApi, type User, type BlockedUser } from '../../api'
 import UserCard from './UserCard'
 import TrafficDashboard from './traffic/TrafficDashboard'
@@ -14,6 +16,7 @@ function TabPanel({ children, value, index }: { children: React.ReactNode; value
 
 export default function AdminPage() {
   const [tab, setTab] = useState(0)
+  const navigate = useNavigate()
   const [activeUsers, setActiveUsers] = useState<User[]>([])
   const [pendingUsers, setPendingUsers] = useState<User[]>([])
   const [blocks, setBlocks] = useState<Record<string, BlockedUser>>({})
@@ -64,13 +67,21 @@ export default function AdminPage() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Пользователи
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mt={0.5}>
-          Управление доступами и подключениями
-        </Typography>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+        <Box>
+          <Typography variant="h5" fontWeight={700}>
+            Пользователи
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mt={0.5}>
+            Доступы, трафик и блокировки
+          </Typography>
+        </Box>
+        <Tooltip title="Сбор данных: IP и домены">
+          <IconButton aria-label="Настройки сбора данных" onClick={() => navigate('/admin/privacy')}
+            sx={{ border: '1px solid #B5D4F4', borderRadius: 2.5, background: '#fff', width: 44, height: 44 }}>
+            <Settings sx={{ color: '#185FA5' }} />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}

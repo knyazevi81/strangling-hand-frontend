@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Card, CardContent, Skeleton } from '@mui/material'
+import { Alert, Card, CardContent, Skeleton, Typography } from '@mui/material'
 import { vpnApi, apiError, type VpnMe } from '../../api'
 import SubscriptionCard from './SubscriptionCard'
 import StatusBoard from './StatusBoard'
@@ -35,6 +35,13 @@ export default function VpnSection() {
       {me && !me.blocked && <SubscriptionCard me={me}
         onChange={(d) => setMe({ ...d, profiles: d.profiles ?? 0, profile_names: d.profile_names ?? [] })} />}
       {!me?.blocked && <StatusBoard profileNames={me?.profile_names} />}
+      {me?.privacy && (me.privacy.collect_ips || me.privacy.collect_domains) && (
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: -0.5, mb: 2, px: 0.5, lineHeight: 1.5 }}>
+          Администратор видит{me.privacy.collect_ips ? `, с каких IP вы подключаетесь (хранится ${me.privacy.ips_days} дн.)` : ''}
+          {me.privacy.collect_ips && me.privacy.collect_domains ? ' и' : ''}
+          {me.privacy.collect_domains ? ` какие сайты открываете — только домены, без адресов страниц (${me.privacy.domains_days} дн.)` : ''}.
+        </Typography>
+      )}
     </>
   )
 }

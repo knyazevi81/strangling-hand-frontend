@@ -12,6 +12,7 @@ import SubscribeDialog from './SubscribeDialog'
 import UserAccessDialog from './access/UserAccessDialog'
 import BlockDialog from './blocks/BlockDialog'
 import { blocksApi, blockUntilText, type BlockedUser } from '../../api'
+import { useNavigate } from 'react-router-dom'
 
 interface Props {
   user: User
@@ -125,6 +126,7 @@ export default function UserCard({ user, pending, onActivated, block, onBlockCha
   const [editSub, setEditSub] = useState<Subscribe | null>(null)
   const [accessOpen, setAccessOpen] = useState(false)
   const [blockOpen, setBlockOpen] = useState(false)
+  const navigate = useNavigate()
   const [unblocking, setUnblocking] = useState(false)
 
   const handleUnblock = async () => {
@@ -238,8 +240,12 @@ export default function UserCard({ user, pending, onActivated, block, onBlockCha
             <Collapse in={open}>
               <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.06)' }} />
 
+              <Button size="small" variant="contained" fullWidth onClick={() => navigate(`/admin/users/${user.id}`)}
+                sx={{ mb: 1, borderRadius: 3 }}>
+                Трафик, IP, домены, доступ
+              </Button>
               <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <Button size="small" variant="contained" onClick={() => setAccessOpen(true)} sx={{ flex: 1, borderRadius: 3 }}>
+                <Button size="small" variant="outlined" onClick={() => setAccessOpen(true)} sx={{ flex: 1, borderRadius: 3 }}>
                   Доступ к выходам
                 </Button>
                 {block ? (

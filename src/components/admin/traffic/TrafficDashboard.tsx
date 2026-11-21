@@ -5,7 +5,8 @@ import {
 import { trafficApi, apiError, type HourPoint, type TrafficOverview, type UserTraffic } from '../../../api'
 import { bytes, timeAgo } from '../../vpn/utils'
 import UsageBars, { type UsagePoint } from './UsageBars'
-import UserTrafficDialog from './UserTrafficDialog'
+import { useNavigate } from 'react-router-dom'
+import DomainsPanel from '../users/DomainsPanel'
 
 const fmtHour = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
 const fmtDay = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' })
@@ -74,7 +75,7 @@ export default function TrafficDashboard() {
   const [days, setDays] = useState(7)
   const [data, setData] = useState<TrafficOverview | null>(null)
   const [error, setError] = useState('')
-  const [selected, setSelected] = useState<UserTraffic | null>(null)
+  const navigate = useNavigate()
 
   const load = useCallback(async (d: number) => {
     setError('')
@@ -134,7 +135,7 @@ export default function TrafficDashboard() {
               {users.length === 0 && (
                 <Typography variant="body2" color="text.secondary" py={1}>Пока нет данных</Typography>
               )}
-              {users.map((u) => <UserRow key={u.user_id} u={u} max={max} onClick={() => setSelected(u)} />)}
+              {users.map((u) => <UserRow key={u.user_id} u={u} max={max} onClick={() => navigate(`/admin/users/${u.user_id}?tab=traffic`)} />)}
             </CardContent>
           </Card>
 
@@ -173,7 +174,13 @@ export default function TrafficDashboard() {
         </>
       )}
 
-      <UserTrafficDialog user={selected} onClose={() => setSelected(null)} />
+      {data && (
+        <Card sx={{ mt: 1.5 }}>
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 1.5 } }}>
+            <DomainsPanel title="Популярные сайты" />
+          </CardContent>
+        </Card>
+      )}
     </Box>
   )
 }
