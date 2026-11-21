@@ -12,6 +12,7 @@ import {
 import { subscribesApi, usersApi, type Subscribe } from '../../api'
 import { useAuthStore } from '../../store/auth'
 import { API_BASE_URL } from '../../api'
+import VpnSection from '../vpn/VpnSection'
 
 const WS_BASE = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
 
@@ -301,12 +302,29 @@ export default function ClientPage() {
     <Box sx={{ pb: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
         <Box>
-          <Typography variant="h5">Мои подключения</Typography>
+          <Typography variant="h5">Мой VPN</Typography>
           <Typography variant="body2" color="text.secondary" mt={0.3}>
-            {subs.length > 0 ? `${subs.length} конфигурации` : 'Подключений пока нет'}
+            Подписка, серверы и помощь
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5 }}>
+        <Tooltip title="Сменить пароль">
+          <IconButton onClick={() => setPassDialogOpen(true)}
+            sx={{ border: '1px solid #B5D4F4', borderRadius: 2, background: '#fff', mt: 0.5 }}>
+            <Lock sx={{ fontSize: 18, color: '#185FA5' }} />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <VpnSection />
+
+      {(loading || subs.length > 0) && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 3, mb: 1.5 }}>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700} color="#042C53">Старые ключи</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Работают, пока мы переезжаем на подписку
+            </Typography>
+          </Box>
           {subs.length > 0 && (
             <Button
               variant={pingAllLoading ? 'outlined' : 'contained'}
@@ -321,16 +339,10 @@ export default function ClientPage() {
               {pingAllLoading ? 'Остановить' : 'Пинговать все'}
             </Button>
           )}
-          <Tooltip title="Сменить пароль">
-            <IconButton onClick={() => setPassDialogOpen(true)}
-              sx={{ border: '1px solid #B5D4F4', borderRadius: 2, background: '#fff' }}>
-              <Lock sx={{ fontSize: 18, color: '#185FA5' }} />
-            </IconButton>
-          </Tooltip>
         </Box>
-      </Box>
+      )}
 
-      {loading && [1, 2].map((i) => (
+      {loading && [1].map((i) => (
         <Card key={i} sx={{ mb: 1.5 }}>
           <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -345,16 +357,6 @@ export default function ClientPage() {
       ))}
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {!loading && subs.length === 0 && !error && (
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: 5 }}>
-            <Wifi sx={{ fontSize: 48, color: '#B5D4F4', mb: 1.5 }} />
-            <Typography variant="subtitle1" color="#185FA5" fontWeight={500}>Нет активных подключений</Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>Обратитесь к администратору</Typography>
-          </CardContent>
-        </Card>
-      )}
 
       {subs.map((sub) => (
         <ConnectionCard
