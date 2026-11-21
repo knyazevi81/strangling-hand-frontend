@@ -15,6 +15,8 @@ import FreeVpnPage from './client/FreeVpnPage'
 import AdminPage from './admin/AdminPage'
 import NotificationsPage from './admin/NotificationsPage'
 import NodesPage from './admin/nodes/NodesPage'
+import UserPage from './admin/users/UserPage'
+import PrivacyPage from './admin/users/PrivacyPage'
 import ErrorBoundary from './ErrorBoundary'
 import ArticlesPage from './articles/ArticlesPage'
 import ArticleView from './articles/ArticleView'
@@ -117,6 +119,8 @@ function ProtectedLayout() {
           <Route path="/articles/:id" element={<ArticleView />} />
           {user.is_superuser && <Route path="/articles/:id/edit" element={<ArticleEditor />} />}
           {user.is_superuser && <Route path="/admin" element={<AdminPage />} />}
+          {user.is_superuser && <Route path="/admin/users/:id" element={<UserPage />} />}
+          {user.is_superuser && <Route path="/admin/privacy" element={<PrivacyPage />} />}
           {user.is_superuser && <Route path="/nodes" element={<NodesPage />} />}
           {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />

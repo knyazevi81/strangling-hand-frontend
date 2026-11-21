@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography, Checkbox,
   Alert, Skeleton, CircularProgress, Chip,
@@ -8,8 +8,8 @@ import { countryLabel } from '../../vpn/utils'
 import ModePicker from './ModePicker'
 
 /** Через какие выходы ходит друг. Галочки «для выбранных» выходов работают и в режиме «все». */
-export default function UserAccessDialog({ userId, email, open, onClose }: {
-  userId: string; email: string; open: boolean; onClose: () => void
+export function UserAccessPanel({ userId, open = true, footer }: {
+  userId: string; open?: boolean; footer?: (save: () => void, saving: boolean, ready: boolean) => React.ReactNode
 }) {
   const [data, setData] = useState<UserAccess | null>(null)
   const [mode, setMode] = useState<ExitMode>('all')
@@ -51,12 +51,7 @@ export default function UserAccessDialog({ userId, email, open, onClose }: {
   }
 
   return (
-    <Dialog open={open} onClose={() => !saving && onClose()} fullWidth>
-      <DialogTitle sx={{ pb: 0.5 }}>
-        Доступ к выходам
-        <Typography variant="body2" color="text.secondary" noWrap>{email}</Typography>
-      </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {error && <Alert severity="error">{error}</Alert>}
         {saved && <Alert severity="success">Сохранено. Узлы применят изменения примерно за минуту.</Alert>}
         {!data && !error && <Skeleton variant="rounded" height={220} />}
@@ -99,13 +94,34 @@ export default function UserAccessDialog({ userId, email, open, onClose }: {
             </Typography>
           </>
         )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ flex: 1 }} disabled={saving}>Закрыть</Button>
-        <Button onClick={save} variant="contained" sx={{ flex: 1 }} disabled={saving || !data}>
-          {saving ? <CircularProgress size={18} color="inherit" /> : 'Сохранить'}
+            {footer ? footer(save, saving, !!data) : (
+        <Button onClick={save} variant="contained" disabled={saving || !data} sx={{ borderRadius: 2.5 }}>
+          {saving ? <CircularProgress size={18} color="inherit" /> : 'Сохранить · применится за минуту'}
         </Button>
-      </DialogActions>
+      )}
+    </Box>
+  )
+}
+
+export default function UserAccessDialog({ userId, email, open, onClose }: {
+  userId: string; email: string; open: boolean; onClose: () => void
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle sx={{ pb: 0.5 }}>
+        Доступ к выходам
+        <Typography variant="body2" color="text.secondary" noWrap>{email}</Typography>
+      </DialogTitle>
+      <DialogContent sx={{ pt: '8px !important' }}>
+        {open && <UserAccessPanel userId={userId} footer={(save, saving, ready) => (
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <Button onClick={onClose} variant="outlined" sx={{ flex: 1 }} disabled={saving}>Закрыть</Button>
+            <Button onClick={save} variant="contained" sx={{ flex: 1 }} disabled={saving || !ready}>
+              {saving ? <CircularProgress size={18} color="inherit" /> : 'Сохранить'}
+            </Button>
+          </Box>
+        )} />}
+      </DialogContent>
     </Dialog>
   )
 }

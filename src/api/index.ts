@@ -117,7 +117,10 @@ export interface VpnMe {
   profile_names: string[]
   links?: ProfileLink[]
   blocked?: VpnBlock | null
+  privacy?: PrivacyNotice | null
 }
+
+export interface PrivacyNotice { collect_ips: boolean; ips_days: number; collect_domains: boolean; domains_days: number }
 
 export interface VpnBlock { since: string; until: string | null; reason: string | null; reset_on_unblock?: boolean }
 
@@ -280,6 +283,26 @@ const fmtUntil = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long
 /** «до 1 декабря, 20:40» или «бессрочно». */
 export function blockUntilText(until: string | null): string {
   return until ? `до ${fmtUntil.format(new Date(until))}` : 'бессрочно'
+}
+
+export interface PrivacySettings {
+  collect_ips: boolean; collect_domains: boolean; ips_days: number; domains_days: number; share_threshold: number
+  geoip_ready?: boolean; outdated_agents?: string[]
+}
+export interface UserIpItem {
+  ip: string; first_seen: string; last_seen: string; connections: number; node_name: string | null
+  country: string | null; city: string | null; org: string | null; now: boolean
+}
+export interface DomainItem { domain: string; connections: number; users: number }
+
+export const privacyApi = {
+  get: () => api.get<PrivacySettings>('/admin/privacy'),
+  set: (data: Partial<PrivacySettings>) => api.put<PrivacySettings>('/admin/privacy', data),
+  deleteData: (kind: 'ips' | 'domains' | 'all') => api.delete('/admin/privacy/data', { params: { kind } }),
+  userIps: (id: string) => api.get<{ collect: boolean; days: number; geoip_ready: boolean; ips: UserIpItem[] }>(`/admin/users/${id}/ips`),
+  userDomains: (id: string, days: number) =>
+    api.get<{ collect: boolean; days: number; domains: DomainItem[] }>(`/admin/users/${id}/domains`, { params: { days } }),
+  topDomains: (days: number) => api.get<{ collect: boolean; days: number; domains: DomainItem[] }>('/admin/domains', { params: { days } }),
 }
 
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
