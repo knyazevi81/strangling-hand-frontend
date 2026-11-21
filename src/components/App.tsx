@@ -15,6 +15,7 @@ import FreeVpnPage from './client/FreeVpnPage'
 import AdminPage from './admin/AdminPage'
 import NotificationsPage from './admin/NotificationsPage'
 import NodesPage from './admin/nodes/NodesPage'
+import ErrorBoundary from './ErrorBoundary'
 import ArticlesPage from './articles/ArticlesPage'
 import ArticleView from './articles/ArticleView'
 import ArticleEditor from './articles/ArticleEditor'
@@ -108,6 +109,7 @@ function ProtectedLayout() {
 
       {/* Content */}
       <Box sx={{ flex: 1, px: 2, pt: 2, pb: 10, maxWidth: 560, mx: 'auto', width: '100%' }}>
+        <ErrorBoundary title="Страница не загрузилась">
         <Routes>
           <Route path="/" element={<ClientPage />} />
           <Route path="/free-vpn" element={<FreeVpnPage />} />
@@ -119,6 +121,7 @@ function ProtectedLayout() {
           {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </Box>
 
       {/* Bottom nav */}

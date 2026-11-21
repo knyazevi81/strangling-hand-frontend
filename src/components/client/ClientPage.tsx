@@ -13,6 +13,7 @@ import { subscribesApi, usersApi, type Subscribe } from '../../api'
 import { useAuthStore } from '../../store/auth'
 import { API_BASE_URL } from '../../api'
 import VpnSection from '../vpn/VpnSection'
+import ErrorBoundary from '../ErrorBoundary'
 
 const WS_BASE = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
 
@@ -315,7 +316,7 @@ export default function ClientPage() {
         </Tooltip>
       </Box>
 
-      <VpnSection />
+      <ErrorBoundary title="Подписка не загрузилась"><VpnSection /></ErrorBoundary>
 
       {(loading || subs.length > 0) && (
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 3, mb: 1.5 }}>
