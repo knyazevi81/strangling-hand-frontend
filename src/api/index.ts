@@ -305,6 +305,24 @@ export const privacyApi = {
   topDomains: (days: number) => api.get<{ collect: boolean; days: number; domains: DomainItem[] }>('/admin/domains', { params: { days } }),
 }
 
+export type NotifyGroup = 'all' | 'no_subscription' | 'inactive_7d' | 'blocked'
+export interface NotifyGroupItem { id: NotifyGroup; title: string; count: number; emails: string[] }
+export interface NotifyAutoItem { key: string; title: string; to: string; enabled: boolean }
+export interface NotifySettings {
+  admin_emails: string[]; effective_admin_emails: string[]
+  node_alerts: boolean; share_alerts: boolean; problem_reports: boolean; block_emails: boolean
+  auto: NotifyAutoItem[]
+}
+
+export const notifyApi = {
+  groups: () => api.get<NotifyGroupItem[]>('/admin/notify/groups'),
+  sendGroup: (group: NotifyGroup, subject: string, message: string) =>
+    api.post<{ sent_to: number; message: string }>('/admin/notify/groups/send', { group, subject, message }),
+  settings: () => api.get<NotifySettings>('/admin/notify/settings'),
+  setSettings: (data: Partial<Omit<NotifySettings, 'auto' | 'effective_admin_emails'>>) =>
+    api.put<NotifySettings>('/admin/notify/settings', data),
+}
+
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
 export function apiError(err: any, fallback = 'Ошибка'): string {
   const d = err?.response?.data
