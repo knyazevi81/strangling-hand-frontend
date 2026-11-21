@@ -9,6 +9,7 @@ import { copyText } from '../../vpn/utils'
 import NodeCard from './NodeCard'
 import NodeFormDialog from './NodeFormDialog'
 import NodeKeyDialog from './NodeKeyDialog'
+import NodeAccessDialog from '../access/NodeAccessDialog'
 
 const REFRESH_MS = 20_000
 
@@ -23,6 +24,7 @@ export default function NodesPage() {
   const [busy, setBusy] = useState(false)
   const [config, setConfig] = useState<{ node: VpnNode; text: string } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [accessNode, setAccessNode] = useState<VpnNode | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -128,6 +130,7 @@ export default function NodesPage() {
                 onRotate={() => setConfirm({ kind: 'rotate', node: n })}
                 onConfig={() => showConfig(n)}
                 onDelete={() => setConfirm({ kind: 'delete', node: n })}
+                onAccess={() => setAccessNode(n)}
               />
             ))}
           </Box>
@@ -143,6 +146,12 @@ export default function NodesPage() {
           setKeyData({ data: res, rotated: false })
         }}
       />
+
+      {accessNode && (
+        <NodeAccessDialog open nodeId={accessNode.id} name={accessNode.name}
+          onClose={() => setAccessNode(null)}
+          onSaved={(restricted) => replace({ ...accessNode, restricted })} />
+      )}
 
       <NodeKeyDialog data={keyData?.data ?? null} rotated={keyData?.rotated ?? false} onClose={() => setKeyData(null)} />
 
