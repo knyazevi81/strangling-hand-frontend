@@ -116,7 +116,10 @@ export interface VpnMe {
   profiles: number
   profile_names: string[]
   links?: ProfileLink[]
+  blocked?: VpnBlock | null
 }
+
+export interface VpnBlock { since: string; until: string | null; reason: string | null; reset_on_unblock?: boolean }
 
 export interface NodeStatus {
   name: string
@@ -262,6 +265,21 @@ export const accessApi = {
   node: (id: string) => api.get<NodeAccess>(`/admin/access/nodes/${id}`),
   setNode: (id: string, restricted: boolean, userIds: string[]) =>
     api.put<NodeAccess>(`/admin/access/nodes/${id}`, { restricted, user_ids: userIds }),
+}
+
+export interface BlockedUser extends VpnBlock { user_id: string; email: string }
+
+export const blocksApi = {
+  list: () => api.get<{ users: BlockedUser[] }>('/admin/blocks/'),
+  block: (userId: string, data: { reason?: string; until?: string | null; notify: boolean; reset_on_unblock: boolean }) =>
+    api.post(`/admin/blocks/${userId}`, data),
+  unblock: (userId: string, notify = true) => api.delete(`/admin/blocks/${userId}`, { params: { notify } }),
+}
+
+const fmtUntil = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+/** «до 1 декабря, 20:40» или «бессрочно». */
+export function blockUntilText(until: string | null): string {
+  return until ? `до ${fmtUntil.format(new Date(until))}` : 'бессрочно'
 }
 
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
