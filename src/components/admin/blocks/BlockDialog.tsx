@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography, TextField, Alert,
   CircularProgress, FormControlLabel, Switch, ButtonBase,
 } from '@mui/material'
-import { blocksApi, apiError, blockUntilText } from '../../../api'
+import { blocksApi, notifyApi, apiError, blockUntilText } from '../../../api'
 
 const REASONS = ['Не оплатил', 'Передал ключ', 'Слишком много трафика', 'Другое']
 const TERMS: { label: string; hours: number | null }[] = [
@@ -34,6 +34,7 @@ export default function BlockDialog({ open, userId, email, onClose, onDone }: {
   useEffect(() => {
     if (!open) return
     setReasonIdx(1); setReason(REASONS[1]); setTerm(1); setNotify(true); setReset(true); setError('')
+    notifyApi.settings().then(({ data }) => setNotify(data.block_emails)).catch(() => {})
   }, [open])
 
   const hours = TERMS[term].hours
