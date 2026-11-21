@@ -10,11 +10,15 @@ import {
 import { usersApi, subscribesApi, type User, type Subscribe } from '../../api'
 import SubscribeDialog from './SubscribeDialog'
 import UserAccessDialog from './access/UserAccessDialog'
+import BlockDialog from './blocks/BlockDialog'
+import { blocksApi, blockUntilText, type BlockedUser } from '../../api'
 
 interface Props {
   user: User
   pending?: boolean
   onActivated?: () => void
+  block?: BlockedUser
+  onBlockChanged?: () => void
 }
 
 function SubRow({ sub, onEdit, onDelete }: {
@@ -112,7 +116,7 @@ function SubRow({ sub, onEdit, onDelete }: {
   )
 }
 
-export default function UserCard({ user, pending, onActivated }: Props) {
+export default function UserCard({ user, pending, onActivated, block, onBlockChanged }: Props) {
   const [open, setOpen] = useState(false)
   const [subs, setSubs] = useState<Subscribe[]>([])
   const [loadingSubs, setLoadingSubs] = useState(false)
@@ -120,6 +124,13 @@ export default function UserCard({ user, pending, onActivated }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editSub, setEditSub] = useState<Subscribe | null>(null)
   const [accessOpen, setAccessOpen] = useState(false)
+  const [blockOpen, setBlockOpen] = useState(false)
+  const [unblocking, setUnblocking] = useState(false)
+
+  const handleUnblock = async () => {
+    setUnblocking(true)
+    try { await blocksApi.unblock(user.id); onBlockChanged?.() } finally { setUnblocking(false) }
+  }
 
   const loadSubs = async () => {
     setLoadingSubs(true)
@@ -191,7 +202,12 @@ export default function UserCard({ user, pending, onActivated }: Props) {
               >
                 {user.email}
               </Typography>
-              {!pending && (
+              {!pending && block && (
+                <Typography variant="caption" color="#A3261A" display="block">
+                  VPN заблокирован {blockUntilText(block.until)}{block.reason ? ` · «${block.reason}»` : ''}
+                </Typography>
+              )}
+              {!pending && !block && (
                 <Typography variant="caption" color="text.secondary">
                   {subs.length > 0 ? `${subs.length} подключений` : 'Нет подключений'}
                 </Typography>
@@ -222,15 +238,20 @@ export default function UserCard({ user, pending, onActivated }: Props) {
             <Collapse in={open}>
               <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.06)' }} />
 
-              <Button
-                size="small"
-                variant="contained"
-                fullWidth
-                onClick={() => setAccessOpen(true)}
-                sx={{ mb: 1, borderRadius: 3 }}
-              >
-                Доступ к выходам
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                <Button size="small" variant="contained" onClick={() => setAccessOpen(true)} sx={{ flex: 1, borderRadius: 3 }}>
+                  Доступ к выходам
+                </Button>
+                {block ? (
+                  <Button size="small" variant="outlined" onClick={handleUnblock} disabled={unblocking} sx={{ flex: 1, borderRadius: 3 }}>
+                    {unblocking ? <CircularProgress size={14} /> : 'Разблокировать'}
+                  </Button>
+                ) : (
+                  <Button size="small" variant="outlined" color="error" onClick={() => setBlockOpen(true)} sx={{ flex: 1, borderRadius: 3 }}>
+                    Заблокировать VPN
+                  </Button>
+                )}
+              </Box>
 
               <Button
                 size="small"
@@ -277,6 +298,8 @@ export default function UserCard({ user, pending, onActivated }: Props) {
       />
 
       <UserAccessDialog userId={user.id} email={user.email} open={accessOpen} onClose={() => setAccessOpen(false)} />
+      <BlockDialog open={blockOpen} userId={user.id} email={user.email} onClose={() => setBlockOpen(false)}
+        onDone={() => { setBlockOpen(false); onBlockChanged?.() }} />
     </>
   )
 }

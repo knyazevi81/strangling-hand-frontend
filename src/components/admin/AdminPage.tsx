@@ -3,8 +3,8 @@ import {
   Box, Typography, Tabs, Tab, Alert,
   Skeleton, Card, CardContent, Badge,
 } from '@mui/material'
-import { People, HourglassEmpty, BarChart } from '@mui/icons-material'
-import { usersApi, type User } from '../../api'
+import { People, HourglassEmpty, BarChart, Block } from '@mui/icons-material'
+import { usersApi, blocksApi, type User, type BlockedUser } from '../../api'
 import UserCard from './UserCard'
 import TrafficDashboard from './traffic/TrafficDashboard'
 
@@ -16,6 +16,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState(0)
   const [activeUsers, setActiveUsers] = useState<User[]>([])
   const [pendingUsers, setPendingUsers] = useState<User[]>([])
+  const [blocks, setBlocks] = useState<Record<string, BlockedUser>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -23,10 +24,12 @@ export default function AdminPage() {
     setLoading(true)
     setError('')
     try {
-      const [allRes, pendingRes] = await Promise.all([
+      const [allRes, pendingRes, blocksRes] = await Promise.all([
         usersApi.getAll(),
         usersApi.getPending(),
+        blocksApi.list().catch(() => ({ data: { users: [] as BlockedUser[] } })),
       ])
+      setBlocks(Object.fromEntries(blocksRes.data.users.map((b) => [b.user_id, b])))
       const pending = pendingRes.data.users
       const pendingIds = new Set(pending.map((u) => u.id))
       const active = allRes.data.users.filter(
@@ -85,7 +88,7 @@ export default function AdminPage() {
       >
         <Tab
           icon={
-            <Badge badgeContent={activeUsers.length} color="primary" max={99}>
+            <Badge badgeContent={activeUsers.filter((u) => !blocks[u.id]).length} color="primary" max={99}>
               <People fontSize="small" />
             </Badge>
           }
@@ -103,6 +106,8 @@ export default function AdminPage() {
           label="Заявки"
           sx={{ minHeight: 44, gap: 1 }}
         />
+        <Tab icon={<Badge badgeContent={Object.keys(blocks).length} color="error" max={99}><Block fontSize="small" /></Badge>}
+          iconPosition="start" label="Заблокированы" sx={{ minHeight: 44, gap: 1 }} />
         <Tab icon={<BarChart fontSize="small" />} iconPosition="start" label="Трафик" sx={{ minHeight: 44, gap: 1 }} />
       </Tabs>
 
@@ -117,8 +122,8 @@ export default function AdminPage() {
             </Typography>
           </Box>
         )}
-        {activeUsers.map((u) => (
-          <UserCard key={u.id} user={u} />
+        {activeUsers.filter((u) => !blocks[u.id]).map((u) => (
+          <UserCard key={u.id} user={u} block={blocks[u.id]} onBlockChanged={load} />
         ))}
       </TabPanel>
 
@@ -139,6 +144,18 @@ export default function AdminPage() {
       </TabPanel>
 
       <TabPanel value={tab} index={2}>
+        {!loading && activeUsers.filter((u) => blocks[u.id]).length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Block sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.3, mb: 1 }} />
+            <Typography variant="body2" color="text.secondary">Никто не заблокирован</Typography>
+          </Box>
+        )}
+        {activeUsers.filter((u) => blocks[u.id]).map((u) => (
+          <UserCard key={u.id} user={u} block={blocks[u.id]} onBlockChanged={load} />
+        ))}
+      </TabPanel>
+
+      <TabPanel value={tab} index={3}>
         <TrafficDashboard />
       </TabPanel>
     </Box>

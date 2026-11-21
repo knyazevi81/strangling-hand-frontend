@@ -3,6 +3,7 @@ import { Alert, Card, CardContent, Skeleton } from '@mui/material'
 import { vpnApi, apiError, type VpnMe } from '../../api'
 import SubscriptionCard from './SubscriptionCard'
 import StatusBoard from './StatusBoard'
+import BlockedNotice from './BlockedNotice'
 
 /** Подписка для Happ и статус серверов: верх страницы «Ключи». */
 export default function VpnSection() {
@@ -30,9 +31,10 @@ export default function VpnSection() {
         </Card>
       )}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {me && <SubscriptionCard me={me}
+      {me?.blocked && <BlockedNotice block={me.blocked} />}
+      {me && !me.blocked && <SubscriptionCard me={me}
         onChange={(d) => setMe({ ...d, profiles: d.profiles ?? 0, profile_names: d.profile_names ?? [] })} />}
-      <StatusBoard profileNames={me?.profile_names} />
+      {!me?.blocked && <StatusBoard profileNames={me?.profile_names} />}
     </>
   )
 }
