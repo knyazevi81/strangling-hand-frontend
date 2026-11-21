@@ -3,9 +3,10 @@ import {
   Box, Typography, Tabs, Tab, Alert,
   Skeleton, Card, CardContent, Badge,
 } from '@mui/material'
-import { People, HourglassEmpty } from '@mui/icons-material'
+import { People, HourglassEmpty, BarChart } from '@mui/icons-material'
 import { usersApi, type User } from '../../api'
 import UserCard from './UserCard'
+import TrafficDashboard from './traffic/TrafficDashboard'
 
 function TabPanel({ children, value, index }: { children: React.ReactNode; value: number; index: number }) {
   return value === index ? <Box pt={2}>{children}</Box> : null
@@ -74,6 +75,8 @@ export default function AdminPage() {
       <Tabs
         value={tab}
         onChange={(_, v) => setTab(v)}
+        variant="scrollable"
+        scrollButtons={false}
         sx={{
           mb: 0,
           '& .MuiTabs-indicator': { borderRadius: 2 },
@@ -100,6 +103,7 @@ export default function AdminPage() {
           label="Заявки"
           sx={{ minHeight: 44, gap: 1 }}
         />
+        <Tab icon={<BarChart fontSize="small" />} iconPosition="start" label="Трафик" sx={{ minHeight: 44, gap: 1 }} />
       </Tabs>
 
       {/* Active users */}
@@ -132,6 +136,10 @@ export default function AdminPage() {
         {pendingUsers.map((u) => (
           <UserCard key={u.id} user={u} pending onActivated={handleActivated} />
         ))}
+      </TabPanel>
+
+      <TabPanel value={tab} index={2}>
+        <TrafficDashboard />
       </TabPanel>
     </Box>
   )
