@@ -6,7 +6,7 @@ import {
 } from '@mui/material'
 import {
   Wifi, AdminPanelSettings, Logout, AccountCircle,
-  Notifications, WifiFind, Article,
+  Notifications, WifiFind, Article, Dns,
 } from '@mui/icons-material'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
@@ -14,6 +14,7 @@ import ClientPage from './client/ClientPage'
 import FreeVpnPage from './client/FreeVpnPage'
 import AdminPage from './admin/AdminPage'
 import NotificationsPage from './admin/NotificationsPage'
+import NodesPage from './admin/nodes/NodesPage'
 import ArticlesPage from './articles/ArticlesPage'
 import ArticleView from './articles/ArticleView'
 import ArticleEditor from './articles/ArticleEditor'
@@ -29,7 +30,8 @@ function ProtectedLayout() {
 
   const getNavValue = () => {
     const p = location.pathname
-    if (p.startsWith('/notifications')) return user?.is_superuser ? 4 : -1
+    if (p.startsWith('/notifications')) return user?.is_superuser ? 5 : -1
+    if (p.startsWith('/nodes')) return user?.is_superuser ? 4 : -1
     if (p.startsWith('/admin')) return user?.is_superuser ? 3 : -1
     if (p.startsWith('/articles')) return 2
     if (p.startsWith('/free-vpn')) return 1
@@ -43,7 +45,7 @@ function ProtectedLayout() {
 
   const handleNav = (_: any, v: number) => {
     if (user.is_superuser) {
-      const routes = ['/', '/free-vpn', '/articles', '/admin', '/notifications']
+      const routes = ['/', '/free-vpn', '/articles', '/admin', '/nodes', '/notifications']
       navigate(routes[v] ?? '/')
     } else {
       navigate(v === 0 ? '/' : v === 1 ? '/free-vpn' : '/articles')
@@ -113,6 +115,7 @@ function ProtectedLayout() {
           <Route path="/articles/:id" element={<ArticleView />} />
           {user.is_superuser && <Route path="/articles/:id/edit" element={<ArticleEditor />} />}
           {user.is_superuser && <Route path="/admin" element={<AdminPage />} />}
+          {user.is_superuser && <Route path="/nodes" element={<NodesPage />} />}
           {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -121,10 +124,11 @@ function ProtectedLayout() {
       {/* Bottom nav */}
       <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
         <BottomNavigation value={navValue} onChange={handleNav}>
-          <BottomNavigationAction label="Ключи" icon={<Wifi />} />
+          <BottomNavigationAction label="VPN" icon={<Wifi />} />
           <BottomNavigationAction label="Банк VPN" icon={<WifiFind />} />
           <BottomNavigationAction label="Статьи" icon={<Article />} />
           {user.is_superuser && <BottomNavigationAction label="Пользователи" icon={<AdminPanelSettings />} />}
+          {user.is_superuser && <BottomNavigationAction label="Узлы" icon={<Dns />} />}
           {user.is_superuser && <BottomNavigationAction label="Рассылка" icon={<Notifications />} />}
         </BottomNavigation>
       </Box>

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const API_BASE_URL = 'https://api.savebit.ru'
+export const API_BASE_URL: string = import.meta.env.VITE_API_URL || 'https://api.savebit.ru'
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
@@ -99,4 +99,123 @@ export const subscribesApi = {
 
 export const freeVpnApi = {
   getConfigs: () => api.get<{ url: string }[]>('/free-vpn/configs'),
+}
+
+// ── VPN: подписка, статус узлов, узлы в админке ───────────────────────────────
+
+export type NodeRole = 'entry' | 'exit'
+
+export interface VpnMe {
+  subscription_url: string
+  profiles: number
+  profile_names: string[]
+}
+
+export interface NodeStatus {
+  name: string
+  role: NodeRole
+  country: string | null
+  online: boolean
+  last_seen_at: string | null
+  latency_ms: number | null
+  active: boolean | null
+}
+
+export interface NodeSettings {
+  reality_target?: string | null
+  reality_server_names?: string[] | null
+  reality_port?: number | null
+  xhttp_port?: number | null
+  hy2_port?: number | null
+  hy2_hop_ports?: string | null
+  brutal_mbps?: number | null
+  direct_profile?: boolean | null
+  probe_url?: string | null
+  probe_interval?: string | null
+  api_port?: number | null
+}
+
+export interface NodeProbe {
+  tag: string
+  address: string
+  port: number
+  proto: string
+  ok: boolean | null
+  ms: number | null
+}
+
+export interface NodeReport {
+  agent_version?: string
+  revision?: string
+  applied_at?: number
+  error?: string | null
+  xray?: { version?: string; active?: boolean }
+  ports?: string[]
+  probes?: NodeProbe[]
+  balancers?: Record<string, string | null>
+  traffic?: { users?: Record<string, { up: number; down: number }>; online?: number }
+  host?: {
+    hostname?: string; os?: string; kernel?: string; cpus?: number
+    uptime_sec?: number; load1?: number; mem_used_pct?: number; disk_used_pct?: number
+  }
+}
+
+export interface VpnNode {
+  id: string
+  name: string
+  role: NodeRole
+  address: string
+  country: string | null
+  enabled: boolean
+  key_prefix: string
+  settings: NodeSettings
+  online: boolean
+  in_sync: boolean | null
+  current_revision: string | null
+  reported_revision: string | null
+  last_seen_at: string | null
+  last_error: string | null
+  xray_version: string | null
+  hy2_fingerprint: string | null
+  report: NodeReport | null
+}
+
+export interface NodeKeyResponse {
+  node: VpnNode
+  key: string
+  install_command: string
+}
+
+export interface ProblemReport {
+  network: 'wifi' | 'mobile' | 'other'
+  provider?: string
+  profile?: string
+  comment?: string
+}
+
+export const vpnApi = {
+  me: () => api.get<VpnMe>('/vpn/me'),
+  reset: () => api.post<VpnMe>('/vpn/me/reset'),
+  status: () => api.get<{ nodes: NodeStatus[]; updated_at: string }>('/vpn/status'),
+  problem: (data: ProblemReport) => api.post<{ ok: boolean }>('/vpn/problem', data),
+}
+
+export const nodesApi = {
+  list: () => api.get<{ nodes: VpnNode[]; total: number }>('/nodes/'),
+  create: (data: { name: string; role: NodeRole; address: string; country?: string; settings?: NodeSettings }) =>
+    api.post<NodeKeyResponse>('/nodes/', data),
+  update: (id: string, data: { name?: string; address?: string; country?: string; enabled?: boolean; settings?: NodeSettings }) =>
+    api.patch<VpnNode>(`/nodes/${id}`, data),
+  rotateKey: (id: string) => api.post<NodeKeyResponse>(`/nodes/${id}/rotate-key`),
+  remove: (id: string) => api.delete(`/nodes/${id}`),
+  config: (id: string) => api.get<Record<string, unknown>>(`/nodes/${id}/config`),
+}
+
+/** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
+export function apiError(err: any, fallback = 'Ошибка'): string {
+  const d = err?.response?.data
+  const msg = d?.result?.error ?? d?.detail ?? d?.message
+  if (typeof msg === 'string') return msg
+  if (Array.isArray(msg) && msg[0]?.msg) return msg[0].msg
+  return fallback
 }
