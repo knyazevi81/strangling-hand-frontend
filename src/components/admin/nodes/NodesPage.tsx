@@ -27,7 +27,7 @@ export default function NodesPage() {
   const load = useCallback(async () => {
     try {
       const { data } = await nodesApi.list()
-      setNodes(data.nodes)
+      setNodes(Array.isArray(data?.nodes) ? data.nodes : [])
       setError('')
     } catch (e) {
       setError(apiError(e, 'Не удалось загрузить узлы'))

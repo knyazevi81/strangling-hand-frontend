@@ -63,7 +63,7 @@ export default function StatusBoard({ profileNames }: { profileNames?: string[] 
     setLoading(true)
     try {
       const { data } = await vpnApi.status()
-      setNodes(data.nodes)
+      setNodes(Array.isArray(data?.nodes) ? data.nodes : [])
       setFailed(false)
     } catch {
       setFailed(true)

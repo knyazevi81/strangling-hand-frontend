@@ -12,7 +12,8 @@ export default function VpnSection() {
 
   useEffect(() => {
     vpnApi.me()
-      .then(({ data }) => setMe(data))
+      // старый бэкенд может не прислать profile_names: не падаем
+      .then(({ data }) => setMe({ ...data, profiles: data.profiles ?? 0, profile_names: data.profile_names ?? [] }))
       .catch((e) => setError(apiError(e, 'Не удалось загрузить подписку')))
       .finally(() => setLoading(false))
   }, [])
@@ -29,7 +30,8 @@ export default function VpnSection() {
         </Card>
       )}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {me && <SubscriptionCard me={me} onChange={setMe} />}
+      {me && <SubscriptionCard me={me}
+        onChange={(d) => setMe({ ...d, profiles: d.profiles ?? 0, profile_names: d.profile_names ?? [] })} />}
       <StatusBoard profileNames={me?.profile_names} />
     </>
   )
