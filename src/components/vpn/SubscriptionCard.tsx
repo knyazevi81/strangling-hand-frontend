@@ -8,6 +8,7 @@ import { ContentCopy, Check, QrCode2, OpenInNew, Autorenew, Shield } from '@mui/
 import { QRCodeSVG } from 'qrcode.react'
 import { vpnApi, apiError, type VpnMe } from '../../api'
 import { copyText, happLink, shortProfile } from './utils'
+import ProfileKeys from './ProfileKeys'
 
 export default function SubscriptionCard({ me, onChange }: { me: VpnMe; onChange: (me: VpnMe) => void }) {
   const [error, setError] = useState('')
@@ -110,6 +111,8 @@ export default function SubscriptionCard({ me, onChange }: { me: VpnMe; onChange
             </Box>
           </Box>
         )}
+        <ProfileKeys links={me.links ?? []} />
+
         {me.profiles === 0 && (
           <Alert severity="warning" sx={{ mt: 2 }}>
             Серверы ещё не подключены. Ссылку можно добавить уже сейчас, ключи появятся сами.

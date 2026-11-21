@@ -105,10 +105,17 @@ export const freeVpnApi = {
 
 export type NodeRole = 'entry' | 'exit'
 
+export interface ProfileLink {
+  name: string
+  protocol: string
+  url: string
+}
+
 export interface VpnMe {
   subscription_url: string
   profiles: number
   profile_names: string[]
+  links?: ProfileLink[]
 }
 
 export interface NodeStatus {
@@ -209,6 +216,33 @@ export const nodesApi = {
   rotateKey: (id: string) => api.post<NodeKeyResponse>(`/nodes/${id}/rotate-key`),
   remove: (id: string) => api.delete(`/nodes/${id}`),
   config: (id: string) => api.get<Record<string, unknown>>(`/nodes/${id}/config`),
+}
+
+export interface HourPoint { hour: string; up: number; down: number }
+export interface UserTraffic {
+  user_id: string; email: string; up: number; down: number; total: number
+  active_hours: number; last_active: string | null
+}
+export interface NodeTraffic { node: string; up: number; down: number }
+export interface TrafficOverview {
+  since: string; until: string; days: number
+  total: { up: number; down: number }
+  hourly: HourPoint[]
+  users: UserTraffic[]
+  nodes: NodeTraffic[]
+}
+export interface UserTrafficDetail {
+  user_id: string; email: string; since: string; until: string; days: number
+  total: { up: number; down: number }
+  hourly: HourPoint[]
+  by_hour_of_day: number[]
+  active_days: number; active_hours: number; last_active: string | null
+  nodes: NodeTraffic[]
+}
+
+export const trafficApi = {
+  overview: (days: number) => api.get<TrafficOverview>('/admin/traffic/', { params: { days } }),
+  user: (id: string, days: number) => api.get<UserTrafficDetail>(`/admin/traffic/users/${id}`, { params: { days } }),
 }
 
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
