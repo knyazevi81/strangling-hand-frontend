@@ -11,7 +11,8 @@ import { usersApi, subscribesApi, type User, type Subscribe } from '../../api'
 import SubscribeDialog from './SubscribeDialog'
 import UserAccessDialog from './access/UserAccessDialog'
 import BlockDialog from './blocks/BlockDialog'
-import { blocksApi, blockUntilText, type BlockedUser } from '../../api'
+import { blocksApi, blockUntilText, type BlockedUser, type UserActivity } from '../../api'
+import { timeAgo } from '../vpn/utils'
 import { useNavigate } from 'react-router-dom'
 
 interface Props {
@@ -20,6 +21,29 @@ interface Props {
   onActivated?: () => void
   block?: BlockedUser
   onBlockChanged?: () => void
+  activity?: UserActivity
+  query?: string
+}
+
+/** Почта с подсвеченным совпадением поиска. */
+function Highlight({ text, query }: { text: string; query?: string }) {
+  const q = (query ?? '').trim().toLowerCase()
+  const i = q ? text.toLowerCase().indexOf(q) : -1
+  if (i < 0) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, i)}
+      <Box component="mark" sx={{ background: '#FFE7A3', color: 'inherit', borderRadius: 0.5, px: 0.15 }}>{text.slice(i, i + q.length)}</Box>
+      {text.slice(i + q.length)}
+    </>
+  )
+}
+
+function activityText(a: UserActivity): string {
+  const where = a.exit_label ? `${a.exit_label}${a.profile === 'auto' ? ' (Авто)' : a.profile === 'direct' ? ' напрямую' : ''}` : ''
+  const isp = [a.org, a.city].filter(Boolean).join(', ')
+  const parts = a.online ? ['онлайн', where, isp] : [a.last_active_at ? `был ${timeAgo(a.last_active_at)}` : 'ещё не подключался']
+  return parts.filter(Boolean).join(' · ')
 }
 
 function SubRow({ sub, onEdit, onDelete }: {
@@ -117,7 +141,7 @@ function SubRow({ sub, onEdit, onDelete }: {
   )
 }
 
-export default function UserCard({ user, pending, onActivated, block, onBlockChanged }: Props) {
+export default function UserCard({ user, pending, onActivated, block, onBlockChanged, activity, query }: Props) {
   const [open, setOpen] = useState(false)
   const [subs, setSubs] = useState<Subscribe[]>([])
   const [loadingSubs, setLoadingSubs] = useState(false)
@@ -190,10 +214,16 @@ export default function UserCard({ user, pending, onActivated, block, onBlockCha
                   : 'rgba(0,229,255,0.1)',
                 border: `1px solid ${pending ? 'rgba(255,145,0,0.25)' : 'rgba(0,229,255,0.2)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
+                flexShrink: 0, position: 'relative',
               }}
             >
               <Person sx={{ fontSize: 20, color: pending ? 'warning.main' : 'primary.main' }} />
+              {activity?.online && (
+                <Box aria-label="онлайн" sx={{
+                  position: 'absolute', right: -1, bottom: -1, width: 12, height: 12, borderRadius: '50%',
+                  background: '#1B7F4A', border: '2px solid #fff',
+                }} />
+              )}
             </Box>
 
             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -202,17 +232,33 @@ export default function UserCard({ user, pending, onActivated, block, onBlockCha
                 fontWeight={600}
                 sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               >
-                {user.email}
+                <Highlight text={user.email} query={query} />
               </Typography>
               {!pending && block && (
                 <Typography variant="caption" color="#A3261A" display="block">
                   VPN заблокирован {blockUntilText(block.until)}{block.reason ? ` · «${block.reason}»` : ''}
                 </Typography>
               )}
-              {!pending && !block && (
+              {!pending && !block && activity && (
+                <Typography variant="caption" display="block" noWrap
+                  sx={{ color: activity.online ? '#155D37' : 'text.secondary', fontWeight: activity.online ? 600 : 400 }}>
+                  {activityText(activity)}
+                </Typography>
+              )}
+              {!pending && !block && !activity && (
                 <Typography variant="caption" color="text.secondary">
                   {subs.length > 0 ? `${subs.length} подключений` : 'Нет подключений'}
                 </Typography>
+              )}
+              {!pending && activity && (activity.custom_routes || activity.devices > 1) && (
+                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                  {activity.devices > 1 && (
+                    <Chip size="small" label={`${activity.devices} устройства`} sx={{ height: 20, fontSize: '0.65rem', background: '#F0F4FF', color: '#1E5A9A' }} />
+                  )}
+                  {activity.custom_routes && (
+                    <Chip size="small" label="свои маршруты" sx={{ height: 20, fontSize: '0.65rem', background: '#E8F5E9', color: '#155D37' }} />
+                  )}
+                </Box>
               )}
             </Box>
 
@@ -242,7 +288,7 @@ export default function UserCard({ user, pending, onActivated, block, onBlockCha
 
               <Button size="small" variant="contained" fullWidth onClick={() => navigate(`/admin/users/${user.id}`)}
                 sx={{ mb: 1, borderRadius: 3 }}>
-                Трафик, IP, домены, доступ
+                Трафик, IP, домены, маршруты, доступ
               </Button>
               <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
                 <Button size="small" variant="outlined" onClick={() => setAccessOpen(true)} sx={{ flex: 1, borderRadius: 3 }}>

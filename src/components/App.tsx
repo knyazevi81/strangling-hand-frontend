@@ -1,14 +1,10 @@
 import React, { useEffect } from 'react'
 import {
-  Box, BottomNavigation, BottomNavigationAction,
-  CircularProgress, Typography, IconButton,
+  Box, CircularProgress, Typography, IconButton,
   Menu, MenuItem, Divider,
 } from '@mui/material'
-import {
-  Wifi, AdminPanelSettings, Logout, AccountCircle,
-  Notifications, WifiFind, Article, Dns,
-} from '@mui/icons-material'
-import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
+import { Logout, AccountCircle } from '@mui/icons-material'
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import ClientPage from './client/ClientPage'
 import FreeVpnPage from './client/FreeVpnPage'
@@ -18,6 +14,9 @@ import NodesPage from './admin/nodes/NodesPage'
 import UserPage from './admin/users/UserPage'
 import PrivacyPage from './admin/users/PrivacyPage'
 import ErrorBoundary from './ErrorBoundary'
+import BottomBar from './nav/BottomBar'
+import RoutesPage from './routes/RoutesPage'
+import RoutingDefaultsPage from './routes/RoutingDefaultsPage'
 import ArticlesPage from './articles/ArticlesPage'
 import ArticleView from './articles/ArticleView'
 import ArticleEditor from './articles/ArticleEditor'
@@ -28,32 +27,11 @@ function ProtectedLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
-  const location = useLocation()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-
-  const getNavValue = () => {
-    const p = location.pathname
-    if (p.startsWith('/notifications')) return user?.is_superuser ? 5 : -1
-    if (p.startsWith('/nodes')) return user?.is_superuser ? 4 : -1
-    if (p.startsWith('/admin')) return user?.is_superuser ? 3 : -1
-    if (p.startsWith('/articles')) return 2
-    if (p.startsWith('/free-vpn')) return 1
-    return 0
-  }
-  const navValue = getNavValue()
 
   if (!user) return <Navigate to="/login" replace />
 
   const handleLogout = () => { logout(); navigate('/login') }
-
-  const handleNav = (_: any, v: number) => {
-    if (user.is_superuser) {
-      const routes = ['/', '/free-vpn', '/articles', '/admin', '/nodes', '/notifications']
-      navigate(routes[v] ?? '/')
-    } else {
-      navigate(v === 0 ? '/' : v === 1 ? '/free-vpn' : '/articles')
-    }
-  }
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F0F4FF' }}>
@@ -110,17 +88,19 @@ function ProtectedLayout() {
       </Box>
 
       {/* Content */}
-      <Box sx={{ flex: 1, px: 2, pt: 2, pb: 10, maxWidth: 560, mx: 'auto', width: '100%' }}>
+      <Box sx={{ flex: 1, px: 2, pt: 2, pb: 14, maxWidth: 560, mx: 'auto', width: '100%' }}>
         <ErrorBoundary title="Страница не загрузилась">
         <Routes>
           <Route path="/" element={<ClientPage />} />
           <Route path="/free-vpn" element={<FreeVpnPage />} />
           <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/routes" element={<RoutesPage />} />
           <Route path="/articles/:id" element={<ArticleView />} />
           {user.is_superuser && <Route path="/articles/:id/edit" element={<ArticleEditor />} />}
           {user.is_superuser && <Route path="/admin" element={<AdminPage />} />}
           {user.is_superuser && <Route path="/admin/users/:id" element={<UserPage />} />}
           {user.is_superuser && <Route path="/admin/privacy" element={<PrivacyPage />} />}
+          {user.is_superuser && <Route path="/admin/routing" element={<RoutingDefaultsPage />} />}
           {user.is_superuser && <Route path="/nodes" element={<NodesPage />} />}
           {user.is_superuser && <Route path="/notifications" element={<NotificationsPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -128,17 +108,7 @@ function ProtectedLayout() {
         </ErrorBoundary>
       </Box>
 
-      {/* Bottom nav */}
-      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
-        <BottomNavigation value={navValue} onChange={handleNav}>
-          <BottomNavigationAction label="VPN" icon={<Wifi />} />
-          <BottomNavigationAction label="Банк VPN" icon={<WifiFind />} />
-          <BottomNavigationAction label="Статьи" icon={<Article />} />
-          {user.is_superuser && <BottomNavigationAction label="Пользователи" icon={<AdminPanelSettings />} />}
-          {user.is_superuser && <BottomNavigationAction label="Узлы" icon={<Dns />} />}
-          {user.is_superuser && <BottomNavigationAction label="Рассылка" icon={<Notifications />} />}
-        </BottomNavigation>
-      </Box>
+      <BottomBar admin={!!user.is_superuser} onLogout={handleLogout} />
     </Box>
   )
 }

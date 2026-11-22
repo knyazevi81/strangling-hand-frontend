@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   Box, Typography, Card, CardContent, Skeleton, IconButton, Tooltip, Button, Chip,
 } from '@mui/material'
-import { Refresh, ReportProblem } from '@mui/icons-material'
+import { Refresh, ReportProblem, Bolt } from '@mui/icons-material'
 import { vpnApi, type NodeStatus } from '../../api'
-import { countryLabel, timeAgo } from './utils'
+import { timeAgo } from './utils'
 import ProblemDialog from './ProblemDialog'
 
 const REFRESH_MS = 30_000
@@ -26,27 +26,38 @@ function latencyColor(ms: number | null) {
   return '#C0392B'
 }
 
-function NodeRow({ n }: { n: NodeStatus }) {
+function Badge({ text, auto }: { text: string; auto?: boolean }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, py: 1 }}>
-      <Dot ok={n.online} />
+    <Box sx={{
+      width: 36, height: 36, borderRadius: 2.5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: auto ? '#185FA5' : '#E6F1FB', border: auto ? 0 : '1px solid #B5D4F4',
+      color: auto ? '#fff' : '#185FA5', fontWeight: 700, fontSize: 13,
+    }}>{auto ? <Bolt sx={{ fontSize: 20 }} /> : text}</Box>
+  )
+}
+
+function CountryRow({ n }: { n: NodeStatus }) {
+  const title = n.label || n.name
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #E6F1FB', borderRadius: 3, px: 1.5, py: 1.25 }}>
+      <Badge text={(n.country || title).slice(0, 2).toUpperCase()} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-          <Typography variant="body2" fontWeight={600} color="#042C53" noWrap>{n.name}</Typography>
+          <Typography variant="body2" fontWeight={600} color="#042C53" noWrap>{title}</Typography>
           {n.active && (
-            <Chip label="сейчас через него" size="small" sx={{
-              height: 18, fontSize: '0.6rem', background: '#E8F5E9', color: '#1B7F4A', border: '1px solid #A5D6A7',
+            <Chip label="сейчас в «Авто»" size="small" sx={{
+              height: 18, fontSize: '0.6rem', background: '#E8F5E9', color: '#155D37', border: '1px solid #A5D6A7',
             }} />
           )}
         </Box>
-        <Typography variant="caption" color="text.secondary">
-          {countryLabel(n.country)}{n.country ? ' · ' : ''}
-          {n.online ? 'работает' : `нет связи, последний раз ${timeAgo(n.last_seen_at)}`}
+        <Typography variant="caption" color={n.online ? 'text.secondary' : '#C0392B'}>
+          {n.online ? (n.in_subscription === false ? 'работает · только в «Авто»' : 'работает')
+            : `нет связи, последний раз ${timeAgo(n.last_seen_at)}`}
         </Typography>
       </Box>
-      {n.role === 'exit' && n.online && (
-        <Typography sx={{ fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 700, color: latencyColor(n.latency_ms) }}>
-          {n.latency_ms !== null ? `${n.latency_ms} ms` : '—'}
+      {n.online && (
+        <Typography sx={{ fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: 700, color: latencyColor(n.latency_ms) }}>
+          {n.latency_ms !== null ? `${n.latency_ms} мс` : '—'}
         </Typography>
       )}
     </Box>
@@ -86,7 +97,10 @@ export default function StatusBoard({ profileNames }: { profileNames?: string[] 
     <Card sx={{ mb: 2 }}>
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1" fontWeight={700} color="#042C53">Серверы</Typography>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700} color="#042C53">Страны</Typography>
+            <Typography variant="caption" color="text.secondary">Выбирается в Happ: профиль с названием страны</Typography>
+          </Box>
           <Tooltip title="Обновить">
             <span>
               <IconButton size="small" onClick={load} disabled={loading}>
@@ -104,21 +118,30 @@ export default function StatusBoard({ profileNames }: { profileNames?: string[] 
           <Typography variant="body2" color="text.secondary" py={1}>Серверы ещё не подключены</Typography>
         )}
 
-        {entries.length > 0 && (
-          <>
-            <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-              Входы: к ним подключается Happ
-            </Typography>
-            {entries.map((n) => <NodeRow key={n.name} n={n} />)}
-          </>
-        )}
         {exits.length > 0 && (
-          <>
-            <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-              Выходы за границей: задержка от входа
-            </Typography>
-            {exits.map((n) => <NodeRow key={n.name} n={n} />)}
-          </>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #185FA5', background: '#F5F9FF', borderRadius: 3, px: 1.5, py: 1.25 }}>
+              <Badge text="" auto />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={600} color="#042C53">Авто</Typography>
+                <Typography variant="caption" color="text.secondary">самая быстрая страна, переключается сама</Typography>
+              </Box>
+              <Chip label="советуем" size="small" sx={{ height: 20, fontSize: '0.65rem', background: '#E8F5E9', color: '#155D37' }} />
+            </Box>
+            {exits.map((n) => <CountryRow key={n.name} n={n} />)}
+          </Box>
+        )}
+        {entries.length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1.25 }}>
+            {entries.map((n) => (
+              <Box key={n.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Dot ok={n.online} />
+                <Typography variant="caption" color="text.secondary">
+                  Вход {n.name}: {n.online ? 'работает' : `нет связи ${timeAgo(n.last_seen_at)}`}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         )}
 
         {allDown && (
