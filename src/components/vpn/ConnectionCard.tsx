@@ -18,14 +18,14 @@ export default function ConnectionCard({ c }: { c: VpnConnection }) {
   if (!c.label) return null
   const where = IN_CASE[c.label] ?? c.label
   return (
-    <Box sx={{ background: '#185FA5', color: '#fff', borderRadius: 4, p: 2, mb: 2, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Box sx={{ background: '#185FA5', color: '#fff', borderRadius: '16px', p: 2, mb: 2, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, color: '#D6E7FA' }}>
         <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: c.online ? '#7FE0A8' : '#9DB0C8' }} />
         {c.online ? `Подключено · ${PROFILE[c.profile]}` : `Последний раз ${timeAgo(c.last_active_at)} · ${PROFILE[c.profile]}`}
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{
-          width: 46, height: 46, borderRadius: 3, background: 'rgba(255,255,255,0.16)', flexShrink: 0,
+          width: 46, height: 46, borderRadius: '12px', background: 'rgba(255,255,255,0.16)', flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16,
         }}>{(c.country || c.label).slice(0, 2).toUpperCase()}</Box>
         <Box sx={{ minWidth: 0 }}>

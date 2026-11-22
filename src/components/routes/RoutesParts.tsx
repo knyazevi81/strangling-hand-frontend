@@ -6,13 +6,13 @@ import { Close, Lock } from '@mui/icons-material'
 import type { RouteException } from '../../api'
 import { normalizeSite, routeFor, siteLabel } from './utils'
 
-export const card = { background: '#fff', border: '1px solid #B5D4F4', borderRadius: 4, p: 2, mb: 2 } as const
+export const card = { background: '#fff', border: '1px solid #B5D4F4', borderRadius: '16px', p: 2, mb: 2 } as const
 
 export function ActionChip({ action }: { action: 'direct' | 'proxy' }) {
   const direct = action === 'direct'
   return (
     <Box component="span" sx={{
-      fontSize: 12, borderRadius: 1.5, px: 1, py: 0.25, whiteSpace: 'nowrap',
+      fontSize: 12, borderRadius: '6px', px: 1, py: 0.25, whiteSpace: 'nowrap',
       background: direct ? '#E8F5E9' : '#E6F1FB', color: direct ? '#155D37' : '#185FA5',
     }}>{direct ? 'напрямую' : 'через VPN'}</Box>
   )
@@ -47,7 +47,7 @@ export function ExceptionList({ items, removable, onRemove, whoLabel }: {
         const can = removable(e)
         return (
           <Box key={e.value} sx={{
-            display: 'flex', alignItems: 'center', gap: 1, borderRadius: 3, pl: 1.5, pr: can ? 0.5 : 1.5, py: can ? 0.25 : 1,
+            display: 'flex', alignItems: 'center', gap: 1, borderRadius: '12px', pl: 1.5, pr: can ? 0.5 : 1.5, py: can ? 0.25 : 1,
             border: can ? '1px solid #E6F1FB' : '1px dashed #B5D4F4', background: can ? '#fff' : '#F8FAFE',
           }}>
             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -92,7 +92,7 @@ export function AddSite({ onAdd, busy, admin }: { onAdd: (e: RouteException) => 
         <ToggleButton value="direct" sx={{ textTransform: 'none', fontWeight: 600 }}>Напрямую</ToggleButton>
         <ToggleButton value="proxy" sx={{ textTransform: 'none', fontWeight: 600 }}>Через VPN</ToggleButton>
       </ToggleButtonGroup>
-      <Button variant="contained" onClick={submit} disabled={busy || !value.trim()} sx={{ borderRadius: 3, minHeight: 44 }}>
+      <Button variant="contained" onClick={submit} disabled={busy || !value.trim()} sx={{ borderRadius: '12px', minHeight: 44 }}>
         Добавить
       </Button>
     </Box>
@@ -123,7 +123,7 @@ export function SiteCheck({ bypass, direct, proxy, exceptions }: {
 
 export function RefreshHint() {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, background: '#FFF4E5', border: '1px solid #F5C27A', borderRadius: 3.5, p: 1.5, mb: 2 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, background: '#FFF4E5', border: '1px solid #F5C27A', borderRadius: '14px', p: 1.5, mb: 2 }}>
       <Typography variant="body2" sx={{ color: '#6B3A00', lineHeight: 1.45 }}>
         Изменения заработают после обновления подписки: в Happ нажми ↻ у подписки Savebit.
       </Typography>

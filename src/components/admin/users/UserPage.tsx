@@ -57,7 +57,7 @@ export default function UserPage() {
       </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
-      {!user && !error && <Skeleton variant="rounded" height={140} sx={{ borderRadius: 4 }} />}
+      {!user && !error && <Skeleton variant="rounded" height={140} sx={{ borderRadius: '16px' }} />}
 
       {user && (
         <>

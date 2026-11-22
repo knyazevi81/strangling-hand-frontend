@@ -41,7 +41,7 @@ export default function UserRoutesPanel({ userId }: { userId: string }) {
   }
 
   if (error && !view) return <Alert severity="error">{error}</Alert>
-  if (!view || !draft) return <Skeleton variant="rounded" height={200} sx={{ borderRadius: 3 }} />
+  if (!view || !draft) return <Skeleton variant="rounded" height={200} sx={{ borderRadius: '12px' }} />
 
   const who = view.changed_by === 'admin' ? 'админ' : view.changed_by === 'self' ? 'сам друг' : null
   const set = (patch: Partial<Draft>) => { setSaved(''); setDraft({ ...draft, ...patch }) }
@@ -92,11 +92,11 @@ export default function UserRoutesPanel({ userId }: { userId: string }) {
 
       <Box sx={{ display: 'flex', gap: 1 }}>
         <Button variant="outlined" disabled={busy} onClick={() => run(() => routesApi.resetUser(userId), 'Сброшено к общим правилам')}
-          sx={{ flex: 1, borderRadius: 3, minHeight: 46 }}>
+          sx={{ flex: 1, borderRadius: '12px', minHeight: 46 }}>
           Сбросить к общим
         </Button>
         <Button variant="contained" disabled={busy} onClick={() => run(() => routesApi.saveUser(userId, draft), 'Сохранено')}
-          sx={{ flex: 1, borderRadius: 3, minHeight: 46 }}>
+          sx={{ flex: 1, borderRadius: '12px', minHeight: 46 }}>
           {busy ? <CircularProgress size={18} color="inherit" /> : 'Сохранить'}
         </Button>
       </Box>

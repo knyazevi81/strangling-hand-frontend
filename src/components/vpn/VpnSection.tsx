@@ -20,10 +20,10 @@ function RoutesLink() {
   }, [])
   return (
     <ButtonBase onClick={() => navigate('/routes')} sx={{
-      width: '100%', textAlign: 'left', background: '#fff', border: '1px solid #B5D4F4', borderRadius: 4,
+      width: '100%', textAlign: 'left', background: '#fff', border: '1px solid #B5D4F4', borderRadius: '16px',
       p: 1.75, mb: 2, display: 'flex', alignItems: 'center', gap: 1.5,
     }}>
-      <Box sx={{ width: 40, height: 40, borderRadius: 3, background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ width: 40, height: 40, borderRadius: '12px', background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <AltRoute sx={{ color: '#155D37' }} />
       </Box>
       <Box sx={{ flex: 1 }}>
