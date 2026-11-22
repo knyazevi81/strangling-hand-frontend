@@ -29,7 +29,7 @@ function latencyColor(ms: number | null) {
 function Badge({ text, auto }: { text: string; auto?: boolean }) {
   return (
     <Box sx={{
-      width: 36, height: 36, borderRadius: 2.5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: 36, height: 36, borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: auto ? '#185FA5' : '#E6F1FB', border: auto ? 0 : '1px solid #B5D4F4',
       color: auto ? '#fff' : '#185FA5', fontWeight: 700, fontSize: 13,
     }}>{auto ? <Bolt sx={{ fontSize: 20 }} /> : text}</Box>
@@ -39,7 +39,7 @@ function Badge({ text, auto }: { text: string; auto?: boolean }) {
 function CountryRow({ n }: { n: NodeStatus }) {
   const title = n.label || n.name
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #E6F1FB', borderRadius: 3, px: 1.5, py: 1.25 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #E6F1FB', borderRadius: '12px', px: 1.5, py: 1.25 }}>
       <Badge text={(n.country || title).slice(0, 2).toUpperCase()} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -120,7 +120,7 @@ export default function StatusBoard({ profileNames }: { profileNames?: string[] 
 
         {exits.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #185FA5', background: '#F5F9FF', borderRadius: 3, px: 1.5, py: 1.25 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, border: '1px solid #185FA5', background: '#F5F9FF', borderRadius: '12px', px: 1.5, py: 1.25 }}>
               <Badge text="" auto />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography variant="body2" fontWeight={600} color="#042C53">Авто</Typography>
@@ -152,7 +152,7 @@ export default function StatusBoard({ profileNames }: { profileNames?: string[] 
 
         <Button
           fullWidth variant="outlined" color="warning" startIcon={<ReportProblem />}
-          onClick={() => setProblemOpen(true)} sx={{ mt: 1.5, borderRadius: 2.5 }}
+          onClick={() => setProblemOpen(true)} sx={{ mt: 1.5, borderRadius: '10px' }}
         >
           У меня не работает
         </Button>

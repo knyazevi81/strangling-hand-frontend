@@ -38,12 +38,12 @@ export default function RoutesPage() {
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {!view && !error && <Skeleton variant="rounded" height={220} sx={{ borderRadius: 4 }} />}
+      {!view && !error && <Skeleton variant="rounded" height={220} sx={{ borderRadius: '16px' }} />}
 
       {view && (
         <>
           {!view.can_edit && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, background: '#FFF4E5', border: '1px solid #F5C27A', borderRadius: 3.5, p: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, background: '#FFF4E5', border: '1px solid #F5C27A', borderRadius: '14px', p: 1.5, mb: 2 }}>
               <Lock sx={{ fontSize: 18, color: '#8A4B00' }} />
               <Typography variant="body2" color="#6B3A00">Маршруты задал администратор, поменять их нельзя.</Typography>
             </Box>
@@ -55,13 +55,13 @@ export default function RoutesPage() {
               hint="Госуслуги, банки и маркетплейсы открываются напрямую: быстрее и без капчи."
               onChange={(v) => save({ bypass_ru: v })} />
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1.5 }}>
-              <Box sx={{ background: '#E8F5E9', borderRadius: 3, p: 1.25 }}>
+              <Box sx={{ background: '#E8F5E9', borderRadius: '12px', p: 1.25 }}>
                 <Typography variant="caption" fontWeight={700} color="#155D37">Напрямую</Typography>
                 <Typography variant="caption" color="#155D37" display="block" sx={{ lineHeight: 1.45, mt: 0.5 }}>
                   {view.bypass_ru ? 'Госуслуги, банки, Ozon, Wildberries, Кинопоиск, ВКонтакте, все .ru и .рф' : 'только твои исключения'}
                 </Typography>
               </Box>
-              <Box sx={{ background: '#E6F1FB', borderRadius: 3, p: 1.25 }}>
+              <Box sx={{ background: '#E6F1FB', borderRadius: '12px', p: 1.25 }}>
                 <Typography variant="caption" fontWeight={700} color="#185FA5">Через VPN</Typography>
                 <Typography variant="caption" color="#185FA5" display="block" sx={{ lineHeight: 1.45, mt: 0.5 }}>
                   YouTube, Instagram, ChatGPT и всё, что заблокировано, даже на .ru

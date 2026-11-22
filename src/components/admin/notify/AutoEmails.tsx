@@ -39,7 +39,7 @@ export default function AutoEmails() {
   }
 
   if (error && !s) return <Alert severity="error">{error}</Alert>
-  if (!s) return <Skeleton variant="rounded" height={280} sx={{ borderRadius: 4 }} />
+  if (!s) return <Skeleton variant="rounded" height={280} sx={{ borderRadius: '16px' }} />
 
   return (
     <Card>

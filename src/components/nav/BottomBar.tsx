@@ -32,12 +32,12 @@ function Tile({ icon, title, hint, onClick, wide, tint = '#E6F1FB', color = '#18
   return (
     <ButtonBase onClick={onClick} sx={{
       gridColumn: wide ? 'span 2' : undefined, justifyContent: 'flex-start', textAlign: 'left',
-      border: '1px solid #E6F1FB', background: '#F8FAFE', borderRadius: 4, p: 1.5,
+      border: '1px solid #E6F1FB', background: '#F8FAFE', borderRadius: '16px', p: 1.5,
       display: 'flex', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start',
       gap: wide ? 1.5 : 1, minHeight: wide ? 64 : 92,
     }}>
       <Box sx={{
-        width: 36, height: 36, borderRadius: 2.5, background: tint, color, flexShrink: 0,
+        width: 36, height: 36, borderRadius: '10px', background: tint, color, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center', '& svg': { fontSize: 20 },
       }}>{icon}</Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -74,7 +74,7 @@ export default function BottomBar({ admin, onLogout }: { admin: boolean; onLogou
               <ButtonBase key={it.key} aria-current={on ? 'page' : undefined}
                 onClick={() => (it.to ? go(it.to) : setMoreOpen((v) => !v))}
                 sx={{
-                  flex: 1, minHeight: 52, borderRadius: 4, flexDirection: 'column', gap: 0.4,
+                  flex: 1, minHeight: 52, borderRadius: '16px', flexDirection: 'column', gap: 0.4,
                   background: on ? '#E6F1FB' : 'transparent', transition: 'background .15s',
                   '& svg': { fontSize: 22, color: on ? '#185FA5' : '#6F8FB5' },
                 }}>
@@ -97,7 +97,7 @@ export default function BottomBar({ admin, onLogout }: { admin: boolean; onLogou
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
             <Typography variant="subtitle1" fontWeight={700} color="#042C53">Ещё</Typography>
             <IconButton aria-label="Закрыть" onClick={() => setMoreOpen(false)}
-              sx={{ background: '#F0F4FF', borderRadius: 3, width: 40, height: 40 }}>
+              sx={{ background: '#F0F4FF', borderRadius: '12px', width: 40, height: 40 }}>
               <Close sx={{ fontSize: 18, color: '#185FA5' }} />
             </IconButton>
           </Box>

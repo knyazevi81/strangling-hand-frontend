@@ -105,7 +105,7 @@ export default function TrafficDashboard() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {!data && !error && <Skeleton variant="rounded" height={260} sx={{ borderRadius: 4 }} />}
+      {!data && !error && <Skeleton variant="rounded" height={260} sx={{ borderRadius: '16px' }} />}
 
       {data && (
         <>

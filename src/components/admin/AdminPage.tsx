@@ -190,7 +190,7 @@ export default function AdminPage() {
       <TabPanel value={tab} index={0}>
         <OnlineSummary online={onlineList} />
         <TextField fullWidth size="small" placeholder="Поиск по почте" value={query} onChange={(e) => setQuery(e.target.value)}
-          inputProps={{ 'aria-label': 'Поиск по почте' }} sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { background: '#fff', borderRadius: 3 } }}
+          inputProps={{ 'aria-label': 'Поиск по почте' }} sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { background: '#fff', borderRadius: '12px' } }}
           InputProps={{
             startAdornment: <InputAdornment position="start"><Search sx={{ color: '#185FA5' }} /></InputAdornment>,
             endAdornment: query ? (
@@ -203,7 +203,7 @@ export default function AdminPage() {
           {([['all', 'Все'], ['online', 'Онлайн'], ['inactive', 'Неактивны'], ['custom', 'Свои маршруты']] as [Filter, string][]).map(([f, label]) => (
             <Chip key={f} label={`${label} · ${counts[f]}`} onClick={() => setFilter(f)} aria-pressed={filter === f}
               sx={{
-                height: 36, borderRadius: 2.5, fontWeight: filter === f ? 600 : 400,
+                height: 36, borderRadius: '10px', fontWeight: filter === f ? 600 : 400,
                 background: filter === f ? '#185FA5' : '#fff', color: filter === f ? '#fff' : '#185FA5',
                 border: filter === f ? 0 : '1px solid #B5D4F4', '&:hover': { background: filter === f ? '#124C86' : '#F5F9FF' },
               }} />

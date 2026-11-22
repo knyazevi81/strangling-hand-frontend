@@ -78,7 +78,7 @@ export default function PrivacyPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {saved && <Alert severity="success" sx={{ mb: 2 }}>Сохранено. Узлы применят изменения примерно за минуту.</Alert>}
-      {!s && !error && <Skeleton variant="rounded" height={300} sx={{ borderRadius: 4 }} />}
+      {!s && !error && <Skeleton variant="rounded" height={300} sx={{ borderRadius: '16px' }} />}
 
       {s && (
         <>

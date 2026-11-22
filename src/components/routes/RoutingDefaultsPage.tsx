@@ -35,7 +35,7 @@ function DomainChips({ items, color, onChange }: { items: string[]; color: 'dire
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1 }}>
         {items.map((d) => (
           <Box key={d} sx={{
-            display: 'flex', alignItems: 'center', gap: 0.25, pl: 1, borderRadius: 2, fontFamily: 'monospace', fontSize: 12,
+            display: 'flex', alignItems: 'center', gap: 0.25, pl: 1, borderRadius: '8px', fontFamily: 'monospace', fontSize: 12,
             background: direct ? '#E8F5E9' : '#E6F1FB', color: direct ? '#155D37' : '#185FA5',
           }}>
             {siteLabel(d)}
@@ -49,7 +49,7 @@ function DomainChips({ items, color, onChange }: { items: string[]; color: 'dire
         <TextField size="small" fullWidth placeholder="сайт или geosite:категория" value={value} error={error}
           onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') add() }}
           inputProps={{ 'aria-label': direct ? 'Добавить сайт напрямую' : 'Добавить сайт через VPN' }} />
-        <Button variant="outlined" onClick={add} disabled={!value.trim()} sx={{ borderRadius: 2.5, flexShrink: 0 }}>Добавить</Button>
+        <Button variant="outlined" onClick={add} disabled={!value.trim()} sx={{ borderRadius: '10px', flexShrink: 0 }}>Добавить</Button>
       </Box>
     </Box>
   )
@@ -108,13 +108,13 @@ export default function RoutingDefaultsPage() {
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {!draft && !error && <Skeleton variant="rounded" height={260} sx={{ borderRadius: 4 }} />}
+      {!draft && !error && <Skeleton variant="rounded" height={260} sx={{ borderRadius: '16px' }} />}
 
       {draft && data && (
         <>
           {data.custom_users > 0 && (
             <ButtonBase onClick={() => navigate('/admin?filter=custom')} sx={{
-              width: '100%', justifyContent: 'flex-start', textAlign: 'left', gap: 1, mb: 2, p: 1.5, borderRadius: 3.5,
+              width: '100%', justifyContent: 'flex-start', textAlign: 'left', gap: 1, mb: 2, p: 1.5, borderRadius: '14px',
               background: '#FFF8E8', border: '1px solid #F5D9A6',
             }}>
               <Typography variant="body2" sx={{ flex: 1, color: '#6B3A00' }}>
@@ -154,9 +154,9 @@ export default function RoutingDefaultsPage() {
             <Typography variant="caption" color="text.secondary" display="block" mb={1.5}>
               Каждый выход виден друзьям отдельным профилем. Порядок как в Happ.
             </Typography>
-            <Box sx={{ border: '1px solid #185FA5', background: '#F5F9FF', borderRadius: 3, p: 1.5, mb: 1 }}>
+            <Box sx={{ border: '1px solid #185FA5', background: '#F5F9FF', borderRadius: '12px', p: 1.5, mb: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.25 }}>
-                <Box sx={{ width: 36, height: 36, borderRadius: 2.5, background: '#185FA5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: '#185FA5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Bolt sx={{ color: '#fff', fontSize: 20 }} />
                 </Box>
                 <Box>
@@ -175,7 +175,7 @@ export default function RoutingDefaultsPage() {
               </TextField>
             </Box>
             {draft.countries.map((c, i) => (
-              <Box key={c.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid #E6F1FB', borderRadius: 3, p: 1, mb: 1 }}>
+              <Box key={c.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, border: '1px solid #E6F1FB', borderRadius: '12px', p: 1, mb: 1 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                   <IconButton size="small" aria-label={`Выше: ${c.label}`} disabled={i === 0} onClick={() => move(i, -1)}>
                     <ArrowUpward sx={{ fontSize: 16 }} />
@@ -207,7 +207,7 @@ export default function RoutingDefaultsPage() {
           <SiteCheck bypass={draft.bypass_ru} direct={draft.direct_domains} proxy={draft.proxy_domains} exceptions={[]} />
 
           {saved && <Alert severity="success" sx={{ mb: 2 }}>Сохранено. Друзья получат новые правила при обновлении подписки.</Alert>}
-          <Button fullWidth variant="contained" onClick={save} disabled={busy} sx={{ borderRadius: 3, minHeight: 48, mb: 2 }}>
+          <Button fullWidth variant="contained" onClick={save} disabled={busy} sx={{ borderRadius: '12px', minHeight: 48, mb: 2 }}>
             {busy ? <CircularProgress size={20} color="inherit" /> : 'Сохранить'}
           </Button>
         </>
