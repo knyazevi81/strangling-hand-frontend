@@ -8,9 +8,11 @@ import { UserAccessPanel } from '../access/UserAccessDialog'
 import BlockDialog from '../blocks/BlockDialog'
 import UserIpsPanel from './UserIpsPanel'
 import DomainsPanel from './DomainsPanel'
+import UserRoutesPanel from '../../routes/UserRoutesPanel'
 
 const TABS = [
-  { id: 'traffic', label: 'Трафик' }, { id: 'ips', label: 'IP' }, { id: 'domains', label: 'Домены' }, { id: 'access', label: 'Доступ' },
+  { id: 'traffic', label: 'Трафик' }, { id: 'ips', label: 'IP' }, { id: 'domains', label: 'Домены' }, { id: 'routes', label: 'Маршруты' },
+  { id: 'access', label: 'Доступ' },
 ]
 
 /** Карточка друга: трафик, IP, домены, доступ к выходам, блокировка. */
@@ -51,7 +53,7 @@ export default function UserPage() {
           sx={{ border: '1px solid #E6F1FB', borderRadius: 2.5, background: '#fff' }}>
           <ArrowBack sx={{ fontSize: 18, color: '#185FA5' }} />
         </IconButton>
-        <Typography variant="body2" color="text.secondary">Пользователи</Typography>
+        <Typography variant="body2" color="text.secondary">Друзья</Typography>
       </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -88,9 +90,9 @@ export default function UserPage() {
             </CardContent>
           </Card>
 
-          <Tabs value={tab} onChange={(_, v) => setParams({ tab: v }, { replace: true })} variant="fullWidth"
+          <Tabs value={tab} onChange={(_, v) => setParams({ tab: v }, { replace: true })} variant="scrollable" scrollButtons={false}
             sx={{ mb: 2, background: '#fff', border: '1px solid #B5D4F4', borderRadius: 3, minHeight: 44,
-              '& .MuiTab-root': { minHeight: 44, fontWeight: 600, textTransform: 'none' } }}>
+              '& .MuiTab-root': { minHeight: 44, minWidth: 0, px: 1.5, flex: '1 0 auto', fontWeight: 600, textTransform: 'none' } }}>
             {TABS.map((t) => <Tab key={t.id} value={t.id} label={t.label} />)}
           </Tabs>
 
@@ -99,6 +101,7 @@ export default function UserPage() {
               {tab === 'traffic' && <UserTrafficPanel userId={id} />}
               {tab === 'ips' && <UserIpsPanel userId={id} />}
               {tab === 'domains' && <DomainsPanel userId={id} />}
+              {tab === 'routes' && <UserRoutesPanel userId={id} />}
               {tab === 'access' && (
                 <>
                   <Typography variant="subtitle1" fontWeight={700} color="#042C53" mb={1}>Через какие выходы ходит</Typography>

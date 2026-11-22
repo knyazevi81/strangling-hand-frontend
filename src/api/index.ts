@@ -118,6 +118,19 @@ export interface VpnMe {
   links?: ProfileLink[]
   blocked?: VpnBlock | null
   privacy?: PrivacyNotice | null
+  connection?: VpnConnection | null
+}
+
+/** Откуда друга сейчас видят сайты. */
+export interface VpnConnection {
+  online: boolean
+  last_active_at: string | null
+  profile: 'auto' | 'country' | 'direct'
+  exit: string | null
+  label: string | null
+  country: string | null
+  ip: string | null
+  via: string | null
 }
 
 export interface PrivacyNotice { collect_ips: boolean; ips_days: number; collect_domains: boolean; domains_days: number }
@@ -132,6 +145,8 @@ export interface NodeStatus {
   last_seen_at: string | null
   latency_ms: number | null
   active: boolean | null
+  label?: string | null
+  in_subscription?: boolean | null
 }
 
 export interface NodeSettings {
@@ -209,6 +224,8 @@ export interface ProblemReport {
 
 export const vpnApi = {
   me: () => api.get<VpnMe>('/vpn/me'),
+  routes: () => api.get<RoutesView>('/vpn/routes'),
+  updateRoutes: (data: { bypass_ru?: boolean; exceptions?: RouteException[] }) => api.put<RoutesView>('/vpn/routes', data),
   reset: () => api.post<VpnMe>('/vpn/me/reset'),
   status: () => api.get<{ nodes: NodeStatus[]; updated_at: string }>('/vpn/status'),
   problem: (data: ProblemReport) => api.post<{ ok: boolean }>('/vpn/problem', data),
@@ -321,6 +338,74 @@ export const notifyApi = {
   settings: () => api.get<NotifySettings>('/admin/notify/settings'),
   setSettings: (data: Partial<Omit<NotifySettings, 'auto' | 'effective_admin_emails'>>) =>
     api.put<NotifySettings>('/admin/notify/settings', data),
+}
+
+// ── Маршруты: что идёт мимо VPN, страны в подписке, кто онлайн ─────────────────
+
+export interface RouteException { value: string; action: 'direct' | 'proxy'; by?: 'self' | 'admin' }
+
+export interface RoutesView {
+  mode: 'default' | 'custom'
+  bypass_ru: boolean
+  default_bypass_ru: boolean
+  exceptions: RouteException[]
+  locked: boolean
+  can_edit: boolean
+  changed_at: string | null
+  changed_by: 'self' | 'admin' | null
+  global_direct: string[]
+  global_proxy: string[]
+}
+
+export interface CountryItem {
+  id: string; name: string; label: string; country: string | null; enabled: boolean; online: boolean
+  in_subscription: boolean; sort: number; latency_ms: number | null; channels: string[]; active: boolean
+}
+
+export interface RoutingDefaults {
+  bypass_ru: boolean
+  allow_self: boolean
+  direct_domains: string[]
+  proxy_domains: string[]
+  auto_prefer: string | null
+  changed_at: string | null
+  countries: CountryItem[]
+  custom_users: number
+  bypass_users: number
+  total_users: number
+}
+
+export interface RoutingDefaultsUpdate {
+  bypass_ru: boolean
+  allow_self: boolean
+  direct_domains: string[]
+  proxy_domains: string[]
+  auto_prefer: string | null
+  countries?: { id: string; label: string; in_subscription: boolean; sort: number }[]
+}
+
+export interface UserActivity {
+  user_id: string
+  online: boolean
+  last_active_at: string | null
+  profile: 'auto' | 'country' | 'direct'
+  exit_label: string | null
+  exit_country: string | null
+  node: string | null
+  devices: number
+  org: string | null
+  city: string | null
+  custom_routes: boolean
+}
+
+export const routesApi = {
+  defaults: () => api.get<RoutingDefaults>('/admin/routing'),
+  saveDefaults: (data: RoutingDefaultsUpdate) => api.put<RoutingDefaults>('/admin/routing', data),
+  ofUser: (id: string) => api.get<RoutesView>(`/admin/users/${id}/routes`),
+  saveUser: (id: string, data: { mode: 'default' | 'custom'; bypass_ru: boolean; exceptions: RouteException[]; locked: boolean }) =>
+    api.put<RoutesView>(`/admin/users/${id}/routes`, data),
+  resetUser: (id: string) => api.delete<RoutesView>(`/admin/users/${id}/routes`),
+  activity: () => api.get<{ users: UserActivity[] }>('/admin/activity'),
 }
 
 /** Текст ошибки из ответа бэкенда: формат {result: {error}} или {detail}. */
