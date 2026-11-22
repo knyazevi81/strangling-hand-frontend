@@ -9,6 +9,7 @@ function KeyRow({ link }: { link: ProfileLink }) {
   const [copied, setCopied] = useState(false)
   const [qr, setQr] = useState(false)
   const hy2 = link.protocol === 'hysteria2'
+  const vless = link.protocol === 'vless'
   return (
     <Box sx={{ py: 1, borderTop: '1px solid #E6F1FB' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -16,7 +17,12 @@ function KeyRow({ link }: { link: ProfileLink }) {
           <Typography variant="body2" fontWeight={600} color="#042C53" noWrap>{shortProfile(link.name)}</Typography>
           {hy2 && (
             <Typography variant="caption" color="text.secondary" display="block">
-              Не все клиенты понимают Hysteria2: если не импортируется, бери другой ключ
+              На случай серьезных блокировок или звонков UDP
+            </Typography>
+          )}
+          {vless && (
+            <Typography variant="caption" color="text.secondary" display="block">
+              Базовый мощщщный протокол
             </Typography>
           )}
         </Box>
