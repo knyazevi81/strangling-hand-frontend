@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { authApi, type User } from '../api'
+import { authApi, clearApiCache, type User } from '../api'
 
 interface AuthState {
   user: User | null
@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    clearApiCache()
     localStorage.clear()
     set({ user: null })
   },
