@@ -15,6 +15,7 @@ import UserPage from './admin/users/UserPage'
 import PrivacyPage from './admin/users/PrivacyPage'
 import ErrorBoundary from './ErrorBoundary'
 import BottomBar from './nav/BottomBar'
+import BitLogo from './brand/BitLogo'
 import RoutesPage from './routes/RoutesPage'
 import RoutingDefaultsPage from './routes/RoutingDefaultsPage'
 import ArticlesPage from './articles/ArticlesPage'
@@ -45,13 +46,7 @@ function ProtectedLayout() {
         borderBottom: '1px solid #E6F1FB',
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-          <Box sx={{
-            width: 30, height: 30, borderRadius: 1.5,
-            background: '#185FA5',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Box sx={{ width: 12, height: 8, border: '2px solid white', borderRadius: '2px' }} />
-          </Box>
+          <BitLogo size={34} tile />
           <Typography variant="subtitle1" fontWeight={700} color="#042C53" letterSpacing={0.2}>
             Savebit
           </Typography>

@@ -6,6 +6,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
+import { BitAnimated } from '../components/brand/BitLogo'
 import { authApi } from '../api'
 
 export const parseError = (err: any): string => {
@@ -74,13 +75,8 @@ export default function LoginPage() {
     }}>
       <Box sx={{ width: '100%', maxWidth: 400 }}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Box sx={{
-            width: 56, height: 56, borderRadius: 3,
-            background: '#185FA5',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            mx: 'auto', mb: 1.5,
-          }}>
-            <Box sx={{ width: 22, height: 14, border: '2.5px solid white', borderRadius: '4px' }} />
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+            <BitAnimated state="idle" height={112} alt="Бит машет рукой" />
           </Box>
           <Typography variant="h5" fontWeight={700} color="#042C53">Savebit</Typography>
           <Typography variant="body2" color="text.secondary" mt={0.5}>
