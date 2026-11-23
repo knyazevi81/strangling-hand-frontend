@@ -13,6 +13,25 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Короткий кэш для списков, которые нужны сразу нескольким экранам (друзья, блокировки):
+// иначе каждое открытие карточки друга и возврат назад скачивают весь список заново.
+// Любой запрос на изменение сбрасывает кэш целиком — устаревшее не покажем.
+const memo = new Map<string, { at: number; p: Promise<any> }>()
+const MEMO_MS = 30_000
+/** При выходе: следующий вошедший не должен увидеть чужие списки. */
+export const clearApiCache = () => memo.clear()
+function cached<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const hit = memo.get(key)
+  if (hit && Date.now() - hit.at < MEMO_MS) return hit.p
+  const p = fn().catch((e) => { memo.delete(key); throw e })
+  memo.set(key, { at: Date.now(), p })
+  return p
+}
+api.interceptors.request.use((config) => {
+  if ((config.method ?? 'get').toLowerCase() !== 'get') memo.clear()
+  return config
+})
+
 api.interceptors.response.use(
   (r) => r,
   async (error) => {
@@ -72,8 +91,8 @@ export const authApi = {
 }
 
 export const usersApi = {
-  getAll: () => api.get<{ users: User[]; total: number }>('/users/'),
-  getPending: () => api.get<{ users: User[]; total: number }>('/users/pending'),
+  getAll: () => cached('users', () => api.get<{ users: User[]; total: number }>('/users/')),
+  getPending: () => cached('pending', () => api.get<{ users: User[]; total: number }>('/users/pending')),
   activate: (userId: string) => api.patch<User>(`/users/${userId}/activate`),
   adminChangePassword: (userId: string, newPassword: string) =>
     api.patch('/users/admin/change-password', { user_id: userId, new_password: newPassword }),
@@ -290,7 +309,7 @@ export const accessApi = {
 export interface BlockedUser extends VpnBlock { user_id: string; email: string }
 
 export const blocksApi = {
-  list: () => api.get<{ users: BlockedUser[] }>('/admin/blocks/'),
+  list: () => cached('blocks', () => api.get<{ users: BlockedUser[] }>('/admin/blocks/')),
   block: (userId: string, data: { reason?: string; until?: string | null; notify: boolean; reset_on_unblock: boolean }) =>
     api.post(`/admin/blocks/${userId}`, data),
   unblock: (userId: string, notify = true) => api.delete(`/admin/blocks/${userId}`, { params: { notify } }),
